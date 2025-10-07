@@ -6,7 +6,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 # !!! ЗАМЕНИТЕ ЭТО НА ВАШ ТОКЕН БОТА !!!
 BOT_TOKEN = "7766785699:AAFeAGqJxdfQ7FbR_rKutsw0_71-iywHYE0"
 # !!! ЗАМЕНИТЕ ЭТО НА ССЫЛКУ, ГДЕ РАЗМЕЩЕН ВАШ HTML-ФАЙЛ (ОБЯЗАТЕЛЬНО HTTPS!) !!!
-WEB_APP_URL = "https://fragmcr.github.io/telegram-webapp/" 
+WEB_APP_URL = "https://fragmcr.github.io/telegram-webapp/index.html" 
 
 # Включите логирование для отслеживания ошибок
 logging.basicConfig(
@@ -55,4 +55,5 @@ def main() -> None:
 if __name__ == '__main__':
 
     main()
+
 
