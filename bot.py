@@ -4,9 +4,9 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 
 # 1. Настройки и токен
 # !!! ЗАМЕНИТЕ ЭТО НА ВАШ ТОКЕН БОТА !!!
-BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
+BOT_TOKEN = "7766785699:AAFeAGqJxdfQ7FbR_rKutsw0_71-iywHYE0"
 # !!! ЗАМЕНИТЕ ЭТО НА ССЫЛКУ, ГДЕ РАЗМЕЩЕН ВАШ HTML-ФАЙЛ (ОБЯЗАТЕЛЬНО HTTPS!) !!!
-WEB_APP_URL = "https://your-domain.com/path/to/your_app.html" 
+WEB_APP_URL = "https://github.com/fragmcr/telegram-webapp.git" 
 
 # Включите логирование для отслеживания ошибок
 logging.basicConfig(
@@ -53,4 +53,5 @@ def main() -> None:
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
+
     main()
