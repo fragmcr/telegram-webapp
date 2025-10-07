@@ -669,8 +669,15 @@
             setTimeout(completeRegistration, 1500);
         }
         
-        window.selectLocation = function(location) {
+         window.selectLocation = function(location) {
+            // 1. Сохраняем данные локально
             saveUserData({ location: location });
+
+            // 2. Перенаправляем пользователя на menu.html
+            // Используем небольшой таймаут, чтобы дать модальному окну "Успешно!" появиться и исчезнуть красиво
+            setTimeout(() => {
+                window.location.href = 'menu.html';
+            }, 500); 
         }
 
         window.updateThemePreference = function(preference) {
