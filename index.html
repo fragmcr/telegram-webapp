@@ -3,842 +3,645 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Приложение ЧАТ - Диалоги</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Моя Telegram Тапалка</title>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        /* ОСНОВНОЙ СТИЛЬ */
         body {
-            font-family: 'Inter', sans-serif;
-            transition: background-color 0.5s, color 0.5s;
-        }
-        /* Стили для скроллбара и анимаций */
-        .hide-scrollbar::-webkit-scrollbar { height: 0px; width: 0px; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
-        .animate-in { animation: fadeIn 0.3s ease-out forwards; }
-        .animate-out { animation: fadeOut 0.3s ease-in forwards; }
-        @keyframes slideLeftIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes slideRightOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-20px); } }
-        .screen-transition-in { animation: slideLeftIn 0.4s ease-out forwards; }
-        .screen-transition-out { animation: slideRightOut 0.4s ease-in forwards; }
-        
-        #app-container {
-            height: 90vh; max-height: 800px; display: flex; flex-direction: column; overflow: hidden;
-        }
-        .dark .bg-white { background-color: #1f2937; }
-        .dark .text-gray-900 { color: #ffffff; }
-
-        /* --- Стили для Swipe-to-Reveal --- */
-        .chat-item-container {
-            position: relative;
-            overflow: hidden; 
-            margin-bottom: 8px; 
-            border-radius: 0.75rem; 
-            background-color: #374151; /* Фон, который будет виден при сдвиге */
-            /* Для предотвращения выделения текста при свайпе */
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: pan-y; /* Позволяет вертикальный скролл, но дает контроль над горизонтальным */
-        }
-        .chat-actions {
-            position: absolute;
-            top: 0;
-            right: 0;
-            height: 100%;
-            width: 120px; /* Ширина 2-х кнопок */
+            /* Новый градиентный фон */
+            background: linear-gradient(135deg, #1f1c2c 0%, #000000 100%); 
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
-            align-items: center;
-            z-index: 0;
-        }
-        .chat-content {
-            position: relative;
-            z-index: 1;
-            /* Ускоренная, пружинистая анимация */
-            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
-            cursor: pointer;
-            background-color: #4b5563; /* bg-gray-700 */
-        }
-        .chat-content.swiped {
-            transform: translateX(-120px); 
-        }
-        
-        .chat-actions button {
-            width: 60px; 
-            height: 100%;
-            display: flex; 
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 4px;
-            font-size: 0.75rem;
-            line-height: 1rem;
-            border-radius: 0;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            user-select: none;
+            box-sizing: border-box;
+            position: relative;
         }
+
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        /* КОНТЕЙНЕР ДЛЯ КНОПОК СПРАВА */
+        .header-right {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px; 
+            z-index: 5;
+        }
+        
+        /* КНОПКИ ШАПКИ */
+        .header-btn {
+            padding: 5px 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+
+        .header-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ID ПОЛЬЗОВАТЕЛЯ */
+        #user-id-display {
+            padding: 5px 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+            border-radius: 10px;
+            font-size: 0.9em;
+        }
+
+        /* КНОПКА ЛИДЕРОВ (Слева) */
+        #leaderboard-button {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            padding: 8px 12px;
+            background-color: #00FFFF;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            z-index: 5;
+        }
+
+        #leaderboard-button:hover {
+            background-color: #00b3b3;
+        }
+
+        /* СТИЛЬ СЧЕТА */
+        #score-display {
+            font-size: 3.5em;
+            margin-bottom: 40px;
+            font-weight: 900;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+        }
+
+        /* ТАПАЕМЫЙ КРУГ */
+        #tap-target {
+            /* УВЕЛИЧЕННЫЙ РАЗМЕР */
+            width: 450px; 
+            height: 450px; 
+            /* ------------------- */
+            cursor: pointer;
+            border-radius: 50%;
+            background-image: url('flag.png'); 
+            background-size: cover; 
+            background-position: center; 
+            background-repeat: no-repeat; 
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.8), 
+                0 0 60px rgba(0, 255, 255, 0.4); 
+            transition: transform 0.05s ease;
+            border: 5px solid #00FFFF; 
+        }
+
+        .tapped {
+            transform: scale(0.92); 
+            box-shadow: 
+                0 0 50px rgba(255, 255, 0, 0.9), 
+                0 0 80px rgba(255, 165, 0, 0.5);
+            border-color: #FFD700;
+        }
+
+        /* МОДАЛЬНОЕ ОКНО (Общее) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: #2c2c2c;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 25px rgba(0, 255, 255, 0.5);
+            color: #ffffff;
+            animation: fadeIn 0.3s ease-out;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative; 
+        }
+        
+        /* КНОПКА ЗАКРЫТИЯ (КРЕСТИК) */
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            line-height: 1; 
+            transition: color 0.2s;
+        }
+        
+        .close-btn:hover {
+            color: #ffffff;
+        }
+
+        /* Стили для модальных окон достижений */
+        #achievement-detail-modal h4 {
+            font-size: 1.8em;
+            color: #FFD700;
+            margin-top: 0;
+            text-align: center; /* Центрируем заголовок */
+        }
+        
+        /* НОВЫЙ СТИЛЬ ДЛЯ ИКОНКИ ДОСТИЖЕНИЯ В МОДАЛЕ */
+        .achievement-detail-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+        /* /НОВЫЙ СТИЛЬ */
+
+        /* Стили для основного окна "Мои Достижения" */
+        .achievement-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px dashed #444;
+            opacity: 0.6;
+            cursor: pointer; 
+            transition: background-color 0.1s;
+        }
+        
+        .achievement-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .achievement-item.achieved {
+            opacity: 1;
+        }
+
+        /* СТИЛЬ ТАБЛИЦЫ ЛИДЕРОВ */
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .leaderboard-table th, .leaderboard-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+
+        .leaderboard-table th {
+            background-color: #1f1c2c;
+            color: #00FFFF;
+        }
+        
+        .leaderboard-table tr:nth-child(even) {
+            background-color: #383838;
+        }
+        
+        .leaderboard-table tr:hover {
+            background-color: #4a4a4a;
+        }
+
+        /* АНИМАЦИИ */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes flyup {
+            0% { opacity: 1; transform: translate(-50%, 0); }
+            100% { opacity: 0; transform: translate(-50%, -120px); } 
+            }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body>
 
-    <div id="app-container" class="w-full max-w-xl p-0 rounded-xl shadow-2xl transition-colors duration-500">
+    <div class="app-container">
         
-        <div id="header" class="relative flex-shrink-0 p-4 border-b dark:border-gray-700 flex justify-between items-center">
-             <button id="back-btn" class="p-1 rounded-full shadow-lg transition transform duration-200 hover:scale-110 active:scale-90 hidden" 
-                     onclick="goBack()">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-             </button>
-             <div class="flex-grow flex items-center min-w-0">
-                 <div id="chat-header-avatar" class="w-10 h-10 rounded-full bg-blue-500 dark:bg-blue-600 flex items-center justify-center text-xl mr-3 flex-shrink-0">
-                    </div>
-                 <div id="chat-header-info" class="truncate">
-                    <h1 id="main-title" class="text-xl font-bold truncate">Диалоги</h1> 
-                    <p id="chat-status" class="text-xs text-gray-500 dark:text-gray-400 truncate"></p>
-                 </div>
-             </div>
-             <div class="flex items-center space-x-2">
-                 <button id="app-back-btn" class="p-1 rounded-full shadow-lg transition transform duration-200 hover:scale-110 active:scale-90" 
-                         onclick="showModal('Главное меню', 'Имитация возврата на предыдущий экран или в главное меню приложения.')">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-                 </button>
-                 <button id="new-chat-btn" class="p-1 rounded-full shadow-lg transition transform duration-200 hover:scale-110 active:scale-90" 
-                         onclick="openNewChatModal()">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square-plus"><path d="M21 15V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14l3.5-2h12a2 2 0 0 0 2-2Z"/><path d="M12 7v6"/><path d="M15 10h-6"/></svg>
-                 </button>
-             </div>
+        <div class="header-right">
+            <div id="user-id-display">ID: </div>
+            <button id="achievements-button" class="header-btn">🏆 Мои достижения</button>
         </div>
         
-        <div id="search-container" class="flex-shrink-0 p-4 border-b dark:border-gray-700">
-            <input type="text" id="search-input" oninput="filterDialogues(this.value)" 
-                   placeholder="Поиск по имени или ID..." 
-                   class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white 
-                          focus:outline-none focus:ring-2 focus:ring-blue-500">
-        </div>
+        <button id="leaderboard-button">Таблица помощников</button>
 
-        <div id="content" class="flex-grow p-4 overflow-y-auto hide-scrollbar">
-            </div>
+        <div id="score-display">0</div>
 
-        <div id="chat-input-container" class="flex-shrink-0 p-3 border-t dark:border-gray-700 hidden">
-            <div class="flex items-center space-x-2">
-                
-                <button id="emoji-picker-btn" class="p-2 rounded-full bg-gray-700 dark:bg-gray-700 text-2xl 
-                                                    transition transform duration-200 hover:scale-110 active:scale-90"
-                        onclick="showEmojiSelectionModal()">
-                    😀
-                </button>
-                
-                <textarea id="message-input" 
-                          placeholder="Ваше сообщение..." 
-                          rows="1"
-                          class="flex-grow p-3 rounded-xl border border-gray-600 dark:border-gray-600 
-                                 bg-gray-700 dark:bg-gray-700 text-white dark:text-white 
-                                 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-hidden"
-                          oninput="autoResizeTextarea(this); checkInputForSend(this)"
-                          onkeydown="handleKeydown(event)"></textarea>
-
-                <button id="send-btn" class="p-2 rounded-full bg-blue-600 text-white shadow-lg 
-                                           transition transform duration-200 hover:scale-110 active:scale-90" 
-                        onclick="sendMessage()" disabled>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-horizontal">
-                        <path d="m3 3 3 9-3 9 19-9Z"/><path d="M6 12h16"/>
-                    </svg>
-                </button>
-            </div>
-        </div>
+        <img 
+            id="tap-target" 
+            src="gaz2.png" 
+            alt="Персонаж для тапанья"
+        >
 
     </div>
-
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-sm">
-            <h3 id="modal-title" class="text-xl font-bold mb-4 text-white">Сообщение</h3>
-            <p id="modal-message" class="mb-6 text-gray-300"></p>
-            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg 
-                           transition transform duration-200 hover:scale-[1.02] active:scale-98" 
-                    onclick="hideModal()">Закрыть</button>
+    
+    <div id="welcome-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('welcome-modal')">&times;</span> 
+            
+            <h2>Добро пожаловать!</h2>
+            <p>
+                Вас приветствует новое приложение для тапанья! Начните нажимать на круг, чтобы заработать очки. Ваш уникальный ID отображается справа вверху. Удачи!
+            </p>
+            <button onclick="closeModal('welcome-modal')" style="display: block; width: 100%; padding: 10px; background-color: #00FFFF; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px;">Начать тапать</button>
         </div>
     </div>
     
-    <div id="emoji-selection-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center p-4 z-50">
-        <div id="emoji-selection-card" class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-md">
-            <h3 class="text-xl font-bold mb-6 text-white border-b pb-4 border-gray-700">Выбрать эмодзи</h3>
-            <div id="emoji-grid" class="grid grid-cols-8 gap-3 max-h-80 overflow-y-auto hide-scrollbar">
+    <div id="leaderboard-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('leaderboard-modal')">&times;</span> 
+
+            <h2>🥇 Таблица помощников</h2>
+            <p style="color: #FFD700; font-size: 0.9em;">
+                *Внимание: Данные в этой таблице — **примерные**. Для реальной таблицы лидеров требуется сервер!
+            </p>
+            <table class="leaderboard-table" id="leaderboard-data">
+                </table>
+            <button onclick="closeModal('leaderboard-modal')" style="display: block; width: 100%; padding: 10px; background-color: #FF6347; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px;">Закрыть</button>
+        </div>
+    </div>
+
+    <div id="achievements-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('achievements-modal')">&times;</span>
+            
+            <h2>🏆 Мои Достижения</h2>
+            
+            <h3 style="color: #FFD700; border-bottom: 2px solid #FFD700; padding-bottom: 5px; margin-top: 10px;">Полученные</h3>
+            <div id="achieved-list">
                 </div>
-            <button class="w-full bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg 
-                           transition transform duration-200 hover:scale-[1.02] active:scale-98 mt-6" 
-                    onclick="closeEmojiSelectionModal()">Закрыть</button>
+
+            <h3 style="color: #777; border-bottom: 2px solid #777; padding-bottom: 5px; margin-top: 20px;">Еще не заслужили</h3>
+            <div id="unachieved-list">
+                </div>
         </div>
     </div>
     
-    <div id="new-chat-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center p-4 z-50">
-        <div id="new-chat-modal-card" class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-sm">
-            <h3 class="text-xl font-bold mb-4 text-white border-b pb-3 border-gray-700">Начать новый диалог</h3>
+    <div id="achievement-detail-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('achievement-detail-modal')">&times;</span>
             
-            <p class="text-sm text-gray-400 mb-4">Введите ID пользователя, с которым хотите начать переписку.</p>
-            
-            <input type="text" id="target-user-id" 
-                   placeholder="ID пользователя (например, 123456)"
-                   class="w-full p-3 mb-6 rounded-lg border border-gray-600 bg-gray-700 text-white 
-                          focus:outline-none focus:ring-2 focus:ring-blue-500">
-                          
-            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg 
-                           transition transform duration-200 hover:scale-[1.02] active:scale-98" 
-                    onclick="startNewChat()">Начать диалог</button>
-                    
-            <button class="w-full bg-transparent border border-gray-600 hover:bg-gray-700 text-gray-300 font-semibold py-3 px-4 rounded-lg 
-                           transition transform duration-200 hover:scale-[1.02] active:scale-98 mt-2" 
-                    onclick="closeNewChatModal()">Отмена</button>
+            <h4 id="achievement-detail-title"></h4>
+            <div id="achievement-detail-description"></div> 
         </div>
     </div>
-
 
     <script>
-        // --- Глобальные настройки и данные (имитация) ---
-        const LOCAL_STORAGE_KEY = 'localChatUserData';
+        // --- КОНФИГУРАЦИЯ ---
+        const IMAGE_IDLE = 'gaz2.png'; 
+        const IMAGE_TAPPED = 'gaz1.png'; 
+        const STORAGE_KEY_SCORE = 'tap_game_score';
+        const STORAGE_KEY_ID = 'tap_game_user_id';
         
-        function getLocalUserData() {
-             const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-             return data ? JSON.parse(data) : null;
-        }
-
-        // Инициализация данных пользователя
-        let userData = {
-            uniqueId: getLocalUserData() ? getLocalUserData().uniqueId : '543210',
-            themePreference: getLocalUserData() ? getLocalUserData().themePreference : 'dark', 
-            name: getLocalUserData() ? getLocalUserData().name || 'Я' : 'Я', 
-            avatar: getLocalUserData() ? getLocalUserData().avatar || '👤' : '👤', 
-            lastOnline: new Date().toISOString()
-        };
-        
-        const contentElement = document.getElementById('content');
-        const titleElement = document.getElementById('main-title');
-        const backBtn = document.getElementById('back-btn'); 
-        const appBackBtn = document.getElementById('app-back-btn'); 
-        const newChatBtn = document.getElementById('new-chat-btn');
-        const chatInputContainer = document.getElementById('chat-input-container');
-        const chatHeaderAvatar = document.getElementById('chat-header-avatar');
-        const chatStatus = document.getElementById('chat-status');
-        const messageInput = document.getElementById('message-input');
-        const sendBtn = document.getElementById('send-btn');
-        const searchContainer = document.getElementById('search-container');
-        
-        let screenHistory = ['dialoguesList']; 
-        let currentScreen = 'dialoguesList';
-        let activeChat = null;
-        
-        // Переменные для обработки свайпа 
-        let xDown = null;
-        let yDown = null;
-        let currentSwipedChat = null; 
-        let isSwiping = false; 
-        const swipeThreshold = 10; // Минимальное движение для регистрации свайпа
-        const maxSwipe = 120; // Ширина кнопок
-
-        // --- MOCK ДАННЫЕ ДЛЯ ЧАТА (Симуляция) ---
-        
-        const EMOJI_LIST = [
-            '😀', '😂', '😍', '😭', '🤯', '🥳', '😎', '😜', '😇', '🤫', '🙈', '🙉', '🙊', '👍', 
-            '🙏', '❤️', '🔥', '💯', '👋', '⭐', '☀️', '☔', '💰', '🔑', '📩', '🔗', '⏳', '💻',
-            '🐶', '🐱', '🦊', '🐻', '🍕', '🍔', '🌮', '🍩', '☕', '🍾', '🎉', '🎁', '🎈', '💍', 
-            '🚗', '✈️', '🏠', '💡', '⏰', '📚', '✏️', '📍', '✅', '❌', '❓', '❕', '❗', '♻️'
+        // СПИСОК ДОСТИЖЕНИЙ
+        const ACHIEVEMENTS = [
+            { name: "Первая цистерна", threshold: 200, description: "Тапни 200 раз и пригони цистерну." },
+            { name: "Котёл надежды", threshold: 500, description: "Тапни 500 раз что бы запустить ГАЗ по трубе на старой газовой котельной." },
+            { name: "Дипломатический тап", threshold: 1000, description: "Тапни 1 000 , пока он говорит: «Мы обязательно рассмотрим ваш вопрос»." },
+            { name: "Найди лишнюю трубу", threshold: 2000, description: "Тапни 2 000 что бы загадочная труба, ведущая в никуда, вернулась на базу." },
+            { name: "Собери долг по-соседски", threshold: 5000, description: "Тапни 5 000 раз, чтобы он вспомнил, что должен за газ прошлой зимой." },
+            { name: "Энергия отчаяния", threshold: 7500, description: "Тапни 7 500 раз, чтобы твой палец выработал достаточно тепла для обогрева одной комнаты." },
+            { name: "Мастер иллюзий", threshold: 10000, description: "Тапни 10 000 по экрану одновременно, создав видимость «газового прорыва»." },
+            { name: "Кибер-мужик", threshold: 12500, description: "Прокачивай мужика тапами: тапни 12 500 и он научится чинить трубы взглядом." },
+            { name: "Газовый ниндзя", threshold: 15000, description: "Тапни по 15 000 раз, не дав ему погасить символический огонёк надежды." },
+            { name: "Честь имею!", threshold: 20000, description: "Тапни 20 000 раз, чтобы не поднимать тарифы на комуналку." },
+            { name: "Не получилось", threshold: 30000, description: "Тапни 30 000 раз, чтобы сказать что такого не было." },
+            { name: "Друг Румынии? Молдавии? Кто там?", threshold: 50000, description: "Тапни 50 000 раз, дабы задуматься «Возможно, вам нужен другой поставщик?»." },
+            { name: "Социальный взрыв", threshold: 60000, description: "Тапни 60 000 раз, чтобы народ хором крикнул: «Га-а-а-з!»." },
+            { name: "Квест «Пломба»", threshold: 75000, description: "Тапни 75 000 раз, чтобы пломба «волшебным образом» восстановилась перед проверкой." },
+            { name: "Газовый магнат", threshold: 90000, description: "Натапай 90 000 раз и получи звание «Почётный спонсор одной трубы»." },
+            { name: "Сезонное чудо", threshold: 100000, description: "Тапни 100 000 раз для разблокировки: «Автономное отопление от жары»." },
+            { name: "Алхимик", threshold: 150000, description: "Натапай 150 000 раз и получи «Горячий чай вместо пара»." },
+            { name: "Голубая мечта", threshold: 200000, description: "Натапай 200 000 раз для достижения «Я почти чувствую запах жаренных котлет!»." },
+            { name: "Герой трёх государств", threshold: 250000, description: "Помоги мужику натапать 250 000 раз, чтобы игра предложила ему гражданство РФ, Молдовы и Украины одновременно." },
+            { name: "Повелитель газа", threshold: 500000, description: "Натапай 500 000 раз что бы стать владельцем \"Трансгаз ПМР\"" },
         ];
         
-        let MOCK_CHATS_DATA = [
-            { id: 'chat_1', userId: '123456', name: 'Иван', avatar: '🧑🏻‍💻', lastMessage: 'Связь по ID работает.', lastSeen: Date.now() - 300000, unreadCount: 1 },
-            { id: 'chat_2', userId: '654321', name: 'Мария', avatar: '👩🏻‍💻', lastMessage: 'Надо добавить много эмодзи! 😂', lastSeen: Date.now() - 1200000, unreadCount: 0 },
-            { id: 'chat_3', userId: '987654', name: 'Алекс', avatar: '🧑🏼‍💻', lastMessage: 'Привет! Это тестовый диалог.', lastSeen: Date.now() - 86400000 * 2, unreadCount: 0 }
-        ];
-
-        let MOCK_MESSAGES = {
-            'chat_1': [
-                { senderId: '123456', text: 'Привет! Как дела?', timestamp: Date.now() - 360000 },
-                { senderId: userData.uniqueId, text: 'Отлично! Тестирую отправку сообщений по ID. 🚀', timestamp: Date.now() - 350000 },
-                { senderId: '123456', text: 'Связь по ID работает.', timestamp: Date.now() - 300000 }
-            ],
-            'chat_2': [
-                { senderId: '654321', text: 'Этот чат очень красивый. 🤩', timestamp: Date.now() - 1800000 },
-                { senderId: userData.uniqueId, text: 'Спасибо! А теперь попробуй эмодзи. 🥳', timestamp: Date.now() - 1500000 },
-                { senderId: '654321', text: 'Надо добавить много эмодзи! 😂', timestamp: Date.now() - 1200000 }
-            ],
-            'chat_3': [
-                { senderId: userData.uniqueId, text: 'Начинаем чат.', timestamp: Date.now() - 86400000 * 2 }
-            ]
-        };
+        // --- ИНИЦИАЛИЗАЦИЯ ПЕРЕМЕННЫХ ---
+        let score = parseInt(localStorage.getItem(STORAGE_KEY_SCORE)) || 0;
+        const tapTarget = document.getElementById('tap-target');
+        const scoreDisplay = document.getElementById('score-display');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const leaderboardButton = document.getElementById('leaderboard-button');
+        const achievementsButton = document.getElementById('achievements-button');
+        const leaderboardDataElement = document.getElementById('leaderboard-data');
+        const achievedList = document.getElementById('achieved-list');
+        const unachievedList = document.getElementById('unachieved-list');
         
-        // --- Логика Swipe-to-Reveal (ОСНОВНОЕ ИСПРАВЛЕНИЕ) ---
+        const detailModal = document.getElementById('achievement-detail-modal');
+        const detailTitle = document.getElementById('achievement-detail-title');
+        const detailDescription = document.getElementById('achievement-detail-description');
         
-        function getTouches(evt) {
-            return evt.touches || evt.originalEvent.touches;
+        // --- ФУНКЦИИ МОДАЛЬНЫХ ОКОН ---
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
         }
 
-        function handleTouchStart(evt) {
-            if (currentScreen !== 'dialoguesList') return;
+        window.closeModal = function(id) { 
+            document.getElementById(id).style.display = 'none';
+        }
+        
+        // --- ФУНКЦИИ УПРАВЛЕНИЯ ДОСТИЖЕНИЯМИ ---
+        
+        /**
+         * Отображает модальное окно с деталями достижения (при клике в списке)
+         * @param {object} achievement - Объект достижения
+         * @param {number} achievementId - ID достижения (1-based index для пути к иконке)
+         */
+        function showAchievementDetail(achievement, achievementId) {
+            const isAchieved = score >= achievement.threshold;
+            // Формируем путь к иконке: logo/1.png, logo/2.png, и т.д.
+            const iconPath = `logo/${achievementId}.png`;
+
+            // 1. Устанавливаем заголовок
+            detailTitle.textContent = achievement.name;
             
-            // Если свайпаем по уже сдвинутому чату, сбрасываем его при нажатии
-            if (currentSwipedChat && currentSwipedChat !== evt.currentTarget.id) {
-                resetSwipedChat(currentSwipedChat);
+            // 2. Генерируем HTML-содержимое для описания (включая иконку)
+            let contentHTML = `
+                <div style="text-align: center;">
+                    <img src="${iconPath}" alt="${achievement.name}" class="achievement-detail-icon" style="border: 3px solid ${isAchieved ? '#32CD32' : '#FF4500'};">
+                </div>
+                <p style="font-size: 1.1em; color: #ccc; text-align: center; margin-bottom: 15px;">${achievement.description}</p>
+            `;
+            
+            // 3. Добавляем статус
+            if (!isAchieved) {
+                const remaining = achievement.threshold - score;
+                contentHTML += `<p style="font-size: 1.2em; color: #FF4500; font-weight: bold; text-align: center;">Осталось тапов: ${remaining.toLocaleString()}</p>`;
+            } else {
+                contentHTML += `<p style="font-size: 1.2em; color: #32CD32; font-weight: bold; text-align: center;">Статус: Получено! 🎉</p>`;
             }
-            
-            const firstTouch = getTouches(evt)[0] || evt;
-            xDown = firstTouch.clientX;
-            yDown = firstTouch.clientY;
-            currentSwipedChat = evt.currentTarget.id;
-            isSwiping = false; // Сбрасываем флаг
+
+            // Устанавливаем сгенерированный HTML
+            detailDescription.innerHTML = contentHTML;
+
+            // Убираем старые стили, если они были от уведомления
+            detailModal.querySelector('.modal-content').style.boxShadow = '0 5px 25px rgba(0, 255, 255, 0.5)';
+            detailTitle.style.color = '#FFD700';
+
+            openModal('achievement-detail-modal');
         }
 
-        function handleTouchMove(evt) {
-            if (currentScreen !== 'dialoguesList' || !xDown || !yDown || !currentSwipedChat) return;
-
-            const xUp = evt.touches ? evt.touches[0].clientX : evt.clientX;
-            const yUp = evt.touches ? evt.touches[0].clientY : evt.clientY;
-
-            const xDiff = xDown - xUp;
-            const yDiff = yDown - yUp;
+        // Показывает уведомление о получении нового достижения (автоматически при тапе)
+        function showAchievementNotification(achievement) {
+            detailTitle.textContent = `🌟 Достижение получено: ${achievement.name}`;
+            // Устанавливаем простой текст, чтобы не сломать разметку, если до этого был клик на детали
+            detailDescription.innerHTML = `<p style="font-size: 1.1em; color: #ccc;">${achievement.description}</p>`; 
             
-            const chatContent = document.getElementById(currentSwipedChat)?.querySelector('.chat-content');
-            if (!chatContent) return;
-            
-            // Если движение достаточное для регистрации
-            if (Math.abs(xDiff) > swipeThreshold || Math.abs(yDiff) > swipeThreshold) { 
+            // Уникальный стиль для уведомления
+            detailModal.querySelector('.modal-content').style.boxShadow = '0 5px 40px gold';
+            detailTitle.style.color = 'gold';
+
+            openModal('achievement-detail-modal');
+        }
+        
+        // Проверяет, не разблокировал ли пользователь новое достижение
+        function checkNewAchievements(oldScore, newScore) {
+            ACHIEVEMENTS.forEach(ach => {
+                // Условие получения: Старый счет был меньше порога, а новый счет - больше или равен
+                if (oldScore < ach.threshold && newScore >= ach.threshold) {
+                    showAchievementNotification(ach);
+                }
+            });
+        }
+        
+        function updateAchievementsDisplay() {
+            achievedList.innerHTML = '';
+            unachievedList.innerHTML = '';
+
+            ACHIEVEMENTS.forEach((ach, index) => { // Используем index для ID иконки
+                const isAchieved = score >= ach.threshold;
+                const achievementId = index + 1; // 1-based index
+                const progressText = isAchieved 
+                    ? `Получено!` 
+                    : `Требуется: ${ach.threshold.toLocaleString()} тапов`;
                 
-                if (Math.abs(xDiff) > Math.abs(yDiff) * 1.5) { // Горизонтальный свайп доминирует
-                    
-                    // --- КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ ---
-                    // Предотвращаем скролл страницы и активируем режим свайпа
-                    evt.preventDefault();
-                    isSwiping = true;
-                    
-                    if (xDiff > 0) { // Свайп влево
-                        let swipeAmount = Math.min(xDiff, maxSwipe);
-                        chatContent.style.transform = `translateX(-${swipeAmount}px)`;
-                    } else { // Свайп вправо
-                        // Если уже сдвинут, уменьшаем сдвиг
-                        let currentSwipe = maxSwipe; 
-                        if (!chatContent.classList.contains('swiped')) {
-                            // Если не был закреплен, берем текущий transform
-                             currentSwipe = parseFloat(chatContent.style.transform.replace('translateX(-', '').replace('px)', '')) || 0;
-                        }
+                const achievementItem = document.createElement('div');
+                achievementItem.classList.add('achievement-item');
+                if (isAchieved) {
+                    achievementItem.classList.add('achieved');
+                }
+                
+                // --- ЛОГИКА ДЛЯ ОТОБРАЖЕНИЯ ЗАМКА (SVG) ---
+                // Открытый замок (зеленый) для полученных.
+                const lockIconOpen = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#32CD32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; min-width: 20px;">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                `;
+                // Закрытый замок (красный) для не полученных.
+                const lockIconClosed = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF4500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; min-width: 20px;">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 7.23-4.66"></path>
+                    </svg>
+                `;
+                
+                const lockIcon = isAchieved ? lockIconOpen : lockIconClosed;
+                
+                achievementItem.innerHTML = `
+                    <span class="achievement-title" style="display: flex; align-items: center;">
+                        ${lockIcon} ${ach.name}
+                    </span>
+                    <span class="achievement-progress">
+                        ${progressText}
+                    </span>
+                `;
+                
+                // Добавляем обработчик клика для показа описания, передавая ID
+                achievementItem.onclick = () => showAchievementDetail(ach, achievementId);
 
-                        let newSwipe = Math.max(0, currentSwipe + xDiff); 
-                        chatContent.style.transform = `translateX(-${newSwipe}px)`;
-                    }
-
-                } else if (isSwiping) {
-                    // Если мы были в режиме свайпа, но движение стало вертикальным, всё равно блокируем прокрутку,
-                    // пока не отпустим палец. Это нужно для надежности.
-                    evt.preventDefault();
+                if (isAchieved) {
+                    achievedList.appendChild(achievementItem);
                 } else {
-                    // Вертикальный свайп доминирует, сбрасываем, чтобы позволить скролл
-                    xDown = null;
-                    yDown = null;
-                }
-            }
-        }
-
-        function handleTouchEnd(evt) {
-            if (currentScreen !== 'dialoguesList' || !currentSwipedChat) return;
-
-            const chatContent = document.getElementById(currentSwipedChat)?.querySelector('.chat-content');
-            if (!chatContent) return;
-            
-            const currentTransform = chatContent.style.transform;
-            const currentX = parseFloat(currentTransform.replace('translateX(-', '').replace('px)', '')) || 0;
-            const activationThreshold = maxSwipe / 2; // 60px
-
-            if (isSwiping) {
-                 evt.preventDefault(); // Гарантируем, что не сработает клик, если был свайп
-            }
-            
-            if (currentX >= activationThreshold) {
-                // Закрепляем в открытом положении
-                chatContent.classList.add('swiped');
-                chatContent.style.transform = `translateX(-${maxSwipe}px)`;
-            } else {
-                // Закрываем
-                resetSwipedChat(currentSwipedChat);
-            }
-            
-            // Сброс переменных
-            xDown = null;
-            yDown = null;
-            
-            // Снимаем флаг свайпа с небольшой задержкой, чтобы не сработал клик после анимации
-            setTimeout(() => { isSwiping = false; }, 350); 
-        }
-        
-        // Сброс всех сдвинутых чатов
-        window.resetSwipedChat = function(chatIdToReset = null) {
-            const selector = chatIdToReset ? `#${chatIdToReset} .chat-content` : '.chat-content.swiped';
-            document.querySelectorAll(selector).forEach(el => {
-                if (el.classList.contains('swiped') || el.style.transform.includes('-')) {
-                    el.classList.remove('swiped');
-                    el.style.transform = `translateX(0px)`;
+                    unachievedList.appendChild(achievementItem);
                 }
             });
-            // Если сбрасываем текущий сдвинутый, то обнуляем глобальную переменную
-            if (chatIdToReset === currentSwipedChat) {
-                currentSwipedChat = null;
+            
+            if (achievedList.children.length === 0) {
+                achievedList.innerHTML = '<p style="font-style: italic;">Пока нет полученных достижений.</p>';
+            }
+            if (unachievedList.children.length === 0) {
+                unachievedList.innerHTML = '<p style="font-style: italic; color: #777;">Все достижения получены!</p>';
             }
         }
         
-        // --- Логика действий ---
         
-        window.handleChatClick = function(chatId) {
-            // Если флаг isSwiping активен, значит это был свайп, а не клик
-            if (isSwiping) {
-                return;
-            }
-            
-            // Если открыт другой чат, сначала закрываем его
-            if (document.querySelector('.chat-content.swiped')) {
-                resetSwipedChat();
-                // Так как сброс асинхронный, можем открыть чат с небольшой задержкой,
-                // чтобы не было конфликта анимаций.
-                setTimeout(() => screenTransition(() => renderChatScreen(chatId)), 300);
-            } else {
-                screenTransition(() => renderChatScreen(chatId));
-            }
+        // --- СЛУЖЕБНЫЕ ФУНКЦИИ (ID, Лидеры, Анимация) ---
+        function generateUserID() {
+            return Math.floor(1000000 + Math.random() * 9000000).toString();
         }
 
-        window.deleteChat = function(chatId) {
-            MOCK_CHATS_DATA = MOCK_CHATS_DATA.filter(chat => chat.id !== chatId);
-            delete MOCK_MESSAGES[chatId];
-
-            const chatEl = document.getElementById(chatId);
-            if(chatEl) {
-                 chatEl.style.maxHeight = chatEl.offsetHeight + 'px';
-                 chatEl.style.opacity = 1;
-                 chatEl.style.transition = 'opacity 0.3s ease, max-height 0.3s ease, margin 0.3s ease';
-                 
-                 setTimeout(() => {
-                     chatEl.style.opacity = 0;
-                     chatEl.style.maxHeight = '0px';
-                     chatEl.style.marginBottom = '0px';
-                 }, 50);
-                 
-                 setTimeout(() => {
-                     chatEl.remove();
-                     renderDialoguesList(MOCK_CHATS_DATA); 
-                 }, 400);
+        function setupUserID() {
+            let userID = localStorage.getItem(STORAGE_KEY_ID);
+            
+            if (!userID) {
+                userID = generateUserID();
+                localStorage.setItem(STORAGE_KEY_ID, userID);
             }
-
-            showModal('Успешно', `Диалог ${chatId} был удален.`);
+            
+            userIdDisplay.textContent = `ID: ${userID}`;
+            return userID;
         }
 
-        // --- Остальные функции (applyTheme, updateScreenState, goBack, updateHeader, filterDialogues, openNewChatModal, closeNewChatModal, startNewChat, renderDialoguesList, renderChatScreen, sendMessage, getLastSeenText, screenTransition, autoResizeTextarea, checkInputForSend, handleKeydown, showModal, hideModal, showEmojiSelectionModal, closeEmojiSelectionModal, insertEmoji) ---
-        // (Они остаются без изменений, кроме логики вызова handleChatClick в renderDialoguesList)
-        
-        // --- ФУНКЦИЯ РЕНДЕРИНГА, ИЗМЕНЕНА ТОЛЬКО ЛОГИКА ONCLICK ---
-        window.renderDialoguesList = function(data = MOCK_CHATS_DATA) {
-            updateHeader('Диалоги', 'Ваш ID: ' + userData.uniqueId, '💬');
-            updateScreenState('dialoguesList');
+        function generateLeaderboard() {
+            const table = leaderboardDataElement;
+            table.innerHTML = `
+                <tr>
+                    <th>№</th>
+                    <th>Помощник</th>
+                    <th>Тапов</th>
+                </tr>
+            `;
             
-            if (data.length === 0) {
-                 contentElement.innerHTML = `<div class="p-4 text-center text-gray-400">
-                                                <p class="text-3xl mb-3">🔎</p>
-                                                <p>Диалоги не найдены по вашему запросу.</p>
-                                             </div>`;
-                return;
-            }
-
-            const html = data.map(chat => {
-                const friend = chat;
-                const status = getLastSeenText(friend.lastSeen);
-                const unreadBadge = friend.unreadCount > 0 ? 
-                    `<span class="flex items-center justify-center w-6 h-6 ml-2 text-xs font-bold text-white bg-red-500 rounded-full flex-shrink-0">${friend.unreadCount}</span>` : '';
-                
-                return `
-                    <div id="${friend.id}" class="chat-item-container rounded-xl"
-                         ontouchstart="handleTouchStart(event)" 
-                         ontouchmove="handleTouchMove(event)" 
-                         ontouchend="handleTouchEnd(event)">
-
-                        <div class="chat-actions">
-                            <button onclick="deleteChat('${friend.id}')" 
-                                    class="bg-red-600 hover:bg-red-700 text-white transition-colors duration-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                                Удалить
-                            </button>
-                             <button onclick="showModal('Скрыть чат', 'Имитация скрытия чата ${friend.name} без удаления.'); resetSwipedChat('${friend.id}')" 
-                                    class="bg-gray-600 hover:bg-gray-700 text-white transition-colors duration-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-archive"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>
-                                Скрыть
-                            </button>
-                        </div>
-
-                        <div class="chat-content p-3 flex items-center shadow rounded-xl"
-                             onclick="handleChatClick('${friend.id}')">
-                            
-                            <div class="w-14 h-14 rounded-full flex items-center justify-center text-3xl 
-                                        bg-gray-600 dark:bg-gray-600 flex-shrink-0 mr-3">
-                                ${friend.avatar}
-                            </div>
-                            
-                            <div class="flex-grow min-w-0">
-                                <div class="flex justify-between items-start">
-                                    <span class="text-lg font-semibold truncate">${friend.name}</span>
-                                    ${unreadBadge}
-                                </div>
-                                <p class="text-sm text-gray-400 dark:text-gray-400 truncate mt-0.5">
-                                    ${friend.lastMessage}
-                                </p>
-                            </div>
-                            
-                            <div class="ml-4 text-xs flex-shrink-0 text-right">
-                                 <p class="${status.color}">${status.text === 'Онлайн' ? 'Онлайн' : 'Офлайн'}</p>
-                                 <p class="font-mono text-gray-500 dark:text-gray-500 mt-1">ID: ${friend.userId}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            contentElement.innerHTML = `<div class="p-2">${html}</div>`;
-        }
-
-        // --- Вспомогательные функции, которые не менялись, но нужны для работы кода ---
-
-        window.getCurrentTheme = function() { return 'dark'; }
-
-        function applyTheme(theme) {
-            const body = document.body;
-            const container = document.getElementById('app-container');
-            const toggleClasses = (element, add, remove) => {
-                element.classList.add(...add);
-                element.classList.remove(...remove);
-            };
+            const currentUserID = setupUserID();
+            const leaders = [
+                { id: '4567890', score: 1250000, name: 'Terminator' },
+                { id: '1234567', score: 980000, name: 'Neo' },
+                { id: currentUserID, score: score, name: 'Вы (Ваш счет)' }, 
+                { id: '8901234', score: 500000, name: 'Snoop' },
+                { id: '5678901', score: 320000, name: 'Grom' },
+            ].sort((a, b) => b.score - a.score); 
             
-            body.classList.add('dark');
-            
-            toggleClasses(body, ['bg-gray-900', 'text-white'], ['bg-white', 'text-gray-900']);
-            toggleClasses(container, ['bg-gray-800', 'shadow-gray-700'], ['bg-white', 'shadow-blue-200']);
-            
-            const btnColorClass = ['bg-gray-700', 'text-white'];
-            if(newChatBtn) toggleClasses(newChatBtn, btnColorClass, []);
-            if(backBtn) toggleClasses(backBtn, btnColorClass, []);
-            if(appBackBtn) toggleClasses(appBackBtn, btnColorClass, []);
-        }
-
-        function updateScreenState(screenName) {
-            currentScreen = screenName;
-            const isChatScreen = screenName === 'chatScreen';
-            
-            backBtn.classList.toggle('hidden', screenName === 'dialoguesList'); 
-            newChatBtn.classList.toggle('hidden', isChatScreen); 
-            appBackBtn.classList.toggle('hidden', isChatScreen); 
-            chatInputContainer.classList.toggle('hidden', !isChatScreen); 
-            searchContainer.classList.toggle('hidden', isChatScreen); 
-
-            if (screenHistory[screenHistory.length - 1] !== screenName) {
-                screenHistory.push(screenName);
-            }
-            if (isChatScreen) {
-                 resetSwipedChat();
-            }
-        }
-        
-        window.goBack = function() {
-            if (screenHistory.length > 1) {
-                screenHistory.pop();
-                const previousScreenName = screenHistory[screenHistory.length - 1];
-                
-                if (previousScreenName === 'dialoguesList') {
-                    activeChat = null;
-                    screenTransition(renderDialoguesList);
-                    updateScreenState('dialoguesList');
-                    updateHeader('Диалоги', 'Ваш ID: ' + userData.uniqueId, '💬');
-                } else if (previousScreenName === 'chatScreen' && activeChat) {
-                    screenTransition(() => renderChatScreen(activeChat.id));
+            for (let i = 0; i < 50; i++) {
+                let leader;
+                if (i < leaders.length) {
+                    leader = leaders[i];
+                } else {
+                    leader = {
+                        id: generateUserID(),
+                        score: Math.floor(Math.random() * 100000) + 1000,
+                        name: `Player_${i + 1}`
+                    };
                 }
-            } else {
-                 showModal("Выход", "Имитация возврата в главное меню приложения.");
+                
+                const row = table.insertRow();
+                row.style.backgroundColor = (leader.id === currentUserID && leader.name === 'Вы (Ваш счет)') ? '#00FFFF30' : ''; 
+                
+                row.insertCell().textContent = i + 1;
+                row.insertCell().textContent = leader.name;
+                row.insertCell().textContent = leader.score.toLocaleString();
             }
         }
         
-        function updateHeader(title, status, avatar) {
-            titleElement.textContent = title;
-            chatStatus.textContent = status;
-            chatHeaderAvatar.textContent = avatar;
-            
-            if (title === 'Диалоги') {
-                 chatHeaderAvatar.classList.remove('bg-gray-500', 'dark:bg-gray-600');
-                 chatHeaderAvatar.classList.add('bg-blue-500', 'dark:bg-blue-600');
-            } else {
-                 chatHeaderAvatar.classList.remove('bg-blue-500', 'dark:bg-blue-600');
-                 chatHeaderAvatar.classList.add('bg-gray-500', 'dark:bg-gray-600');
-            }
-        }
+        function showFloatingPlusOne() {
+            const rect = tapTarget.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
 
-        window.filterDialogues = function(query) {
-            const normalizedQuery = query.toLowerCase().trim();
-            const filteredData = MOCK_CHATS_DATA.filter(chat => {
-                const nameMatch = chat.name.toLowerCase().includes(normalizedQuery);
-                const idMatch = chat.userId.includes(normalizedQuery);
-                return nameMatch || idMatch;
-            });
-            renderDialoguesList(filteredData);
-        }
+            const plusOne = document.createElement('div');
+            plusOne.textContent = '+1';
+            plusOne.style.cssText = `
+                position: fixed; 
+                font-size: 2em;
+                color: #FFD700; 
+                font-weight: bold;
+                top: ${centerY}px;
+                left: ${centerX}px;
+                transform: translate(-50%, -50%);
+                animation: flyup 0.8s ease-out forwards; 
+                pointer-events: none; 
+                z-index: 100; 
+            `;
+            document.body.appendChild(plusOne);
 
-        window.openNewChatModal = function() {
-            document.getElementById('target-user-id').value = '';
-            const modal = document.getElementById('new-chat-modal');
-            const card = document.getElementById('new-chat-modal-card');
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            card.classList.remove('animate-out');
-            card.classList.add('animate-in');
-        }
-
-        window.closeNewChatModal = function() {
-            const modal = document.getElementById('new-chat-modal');
-            const card = document.getElementById('new-chat-modal-card');
-            card.classList.remove('animate-in');
-            card.classList.add('animate-out');
             setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-                card.classList.remove('animate-out');
-            }, 300);
-        }
-
-        window.startNewChat = function() {
-            const targetId = document.getElementById('target-user-id').value.trim();
-            
-            if (!targetId || targetId === userData.uniqueId) {
-                showModal('Ошибка', 'Введите корректный ID собеседника.');
-                return;
-            }
-
-            let existingChat = MOCK_CHATS_DATA.find(chat => chat.userId === targetId);
-
-            if (existingChat) {
-                closeNewChatModal();
-                screenTransition(() => renderChatScreen(existingChat.id));
-                return;
-            }
-
-            const newChatId = 'chat_' + Date.now();
-            const newFriendName = 'Новый друг ' + targetId.slice(0, 3);
-            const newAvatar = EMOJI_LIST[Math.floor(Math.random() * EMOJI_LIST.length)];
-
-            const newChat = {
-                id: newChatId, 
-                userId: targetId, 
-                name: newFriendName, 
-                avatar: newAvatar, 
-                lastMessage: 'Начните вашу переписку!', 
-                lastSeen: Date.now(), 
-                unreadCount: 0 
-            };
-            
-            MOCK_CHATS_DATA.unshift(newChat); 
-            MOCK_MESSAGES[newChatId] = [];
-
-            closeNewChatModal();
-            screenTransition(() => renderChatScreen(newChatId));
-            showModal('Успешно', `Начат новый диалог с ID: ${targetId}`);
-        }
-
-        window.renderChatScreen = function(chatId) {
-            activeChat = MOCK_CHATS_DATA.find(c => c.id === chatId);
-            if (!activeChat) {
-                showModal('Ошибка', 'Диалог не найден.');
-                return;
-            }
-            
-            activeChat.unreadCount = 0;
-
-            const status = getLastSeenText(activeChat.lastSeen);
-            updateHeader(activeChat.name, `ID: ${activeChat.userId} | ${status.text}`, activeChat.avatar);
-            updateScreenState('chatScreen');
-
-            const messages = MOCK_MESSAGES[chatId] || [];
-            
-            const messagesHtml = messages.map(msg => {
-                const isSentByMe = msg.senderId === userData.uniqueId;
-                const alignment = isSentByMe ? 'justify-end' : 'justify-start';
-                const bgColor = isSentByMe ? 'bg-blue-600 text-white' : 'bg-gray-700 dark:bg-gray-700 text-white dark:text-white';
-                const borderRadius = isSentByMe ? 'rounded-tl-xl rounded-bl-xl rounded-tr-sm rounded-br-xl' : 'rounded-tr-xl rounded-br-xl rounded-tl-sm rounded-bl-xl';
-                const time = new Date(msg.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-
-                return `
-                    <div class="flex ${alignment} mb-3">
-                        <div class="max-w-xs md:max-w-md">
-                            <div class="p-3 ${bgColor} ${borderRadius} shadow-md break-words">
-                                ${msg.text.replace(/\n/g, '<br>')}
-                            </div>
-                            <div class="text-xs mt-1 ${isSentByMe ? 'text-right text-gray-400 dark:text-gray-400' : 'text-left text-gray-400 dark:text-gray-400'}">
-                                ${time}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            contentElement.innerHTML = `<div id="messages-list" class="flex flex-col pt-2 pb-4">${messagesHtml}</div>`;
-            
-            setTimeout(() => {
-                contentElement.scrollTop = contentElement.scrollHeight;
-                messageInput.value = '';
-                autoResizeTextarea(messageInput);
-                checkInputForSend(messageInput);
-            }, 50);
-        }
-
-        window.sendMessage = function() {
-            const text = messageInput.value.trim();
-            if (text === "" || !activeChat) return;
-
-            const newMessage = {
-                senderId: userData.uniqueId,
-                text: text,
-                timestamp: Date.now()
-            };
-
-            if (!MOCK_MESSAGES[activeChat.id]) {
-                MOCK_MESSAGES[activeChat.id] = [];
-            }
-            MOCK_MESSAGES[activeChat.id].push(newMessage);
-            
-            const chatIndex = MOCK_CHATS_DATA.findIndex(c => c.id === activeChat.id);
-            if (chatIndex !== -1) {
-                MOCK_CHATS_DATA[chatIndex].lastMessage = text;
-                MOCK_CHATS_DATA[chatIndex].lastSeen = newMessage.timestamp;
-                MOCK_CHATS_DATA.unshift(MOCK_CHATS_DATA.splice(chatIndex, 1)[0]); 
-            }
-
-            renderChatScreen(activeChat.id);
-
-            messageInput.value = '';
-            autoResizeTextarea(messageInput);
-            checkInputForSend(messageInput);
-        }
-
-        window.getLastSeenText = function(timestamp) {
-            const lastSeen = new Date(timestamp);
-            const diffMinutes = Math.floor((Date.now() - lastSeen) / 60000);
-
-            if (diffMinutes < 5) return { text: 'Онлайн', color: 'text-green-500' };
-            if (diffMinutes < 60) return { text: `Был ${diffMinutes} мин. назад`, color: 'text-gray-400' };
-            if (diffMinutes < 1440) return { text: `Был ${Math.floor(diffMinutes / 60)} ч. назад`, color: 'text-gray-400' };
-            
-            return { text: lastSeen.toLocaleDateString(), color: 'text-gray-400' };
-        };
-
-        window.screenTransition = function(renderFunction) {
-            contentElement.classList.add('screen-transition-out');
-            setTimeout(() => {
-                contentElement.classList.remove('screen-transition-out');
-                contentElement.innerHTML = '';
-                renderFunction();
-                contentElement.classList.add('screen-transition-in');
-                setTimeout(() => {
-                    contentElement.classList.remove('screen-transition-in');
-                }, 400);
-            }, 400);
+                plusOne.remove();
+            }, 800);
         }
         
-        function autoResizeTextarea(textarea) {
-            textarea.style.height = 'auto';
-            const maxHeight = parseInt(getComputedStyle(textarea).lineHeight) * 3;
-            if (textarea.scrollHeight > maxHeight) {
-                textarea.style.overflowY = 'auto';
-                textarea.style.height = maxHeight + 'px';
-            } else {
-                textarea.style.overflowY = 'hidden';
-                textarea.style.height = textarea.scrollHeight + 'px';
-            }
-        }
+        // --- ОБРАБОТЧИКИ СОБЫТИЙ ---
         
-        window.checkInputForSend = function(input) {
-            sendBtn.disabled = input.value.trim().length === 0;
-            sendBtn.classList.toggle('opacity-50', sendBtn.disabled);
-            sendBtn.classList.toggle('hover:scale-110', !sendBtn.disabled);
-        }
-
-        window.handleKeydown = function(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                if (!sendBtn.disabled) {
-                    sendMessage();
-                }
-            }
-        }
+        // Настройка ID при загрузке
+        setupUserID();
         
-        window.showModal = function(title, message) {
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-message').textContent = message;
-            const modal = document.getElementById('modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex', 'items-center', 'justify-center'); 
-            document.querySelector('#modal > div').classList.remove('animate-out');
-            document.querySelector('#modal > div').classList.add('animate-in');
-            
-            const extraBtn = document.querySelector('#modal button.bg-red-600');
-            if (extraBtn) extraBtn.remove();
-        }
-
-        window.hideModal = function() {
-            const modal = document.getElementById('modal');
-            document.querySelector('#modal > div').classList.remove('animate-in');
-            document.querySelector('#modal > div').classList.add('animate-out');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex', 'items-center', 'justify-center');
-            }, 300);
-        }
-
-        window.showEmojiSelectionModal = function() {
-            const modal = document.getElementById('emoji-selection-modal');
-            const card = document.getElementById('emoji-selection-card');
-            const grid = document.getElementById('emoji-grid');
-            
-            const emojiHtml = EMOJI_LIST.map(emoji => `
-                <button class="text-3xl hover:bg-gray-700 dark:hover:bg-gray-700 rounded-lg p-1 transition-colors"
-                        onclick="insertEmoji('${emoji}'); closeEmojiSelectionModal()">
-                    ${emoji}
-                </button>
-            `).join('');
-            grid.innerHTML = emojiHtml;
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            card.classList.remove('animate-out');
-            card.classList.add('animate-in');
-        }
-
-        window.closeEmojiSelectionModal = function() {
-            const modal = document.getElementById('emoji-selection-modal');
-            const card = document.getElementById('emoji-selection-card');
-            card.classList.remove('animate-in');
-            card.classList.add('animate-out');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-                card.classList.remove('animate-out');
-            }, 300);
-        }
-
-        window.insertEmoji = function(emoji) {
-            const input = document.getElementById('message-input');
-            const start = input.selectionStart;
-            const end = input.selectionEnd;
-            const value = input.value;
-
-            input.value = value.substring(0, start) + emoji + value.substring(end);
-            
-            input.selectionStart = input.selectionEnd = start + emoji.length;
-            
-            autoResizeTextarea(input);
-            checkInputForSend(input);
-            input.focus();
-        }
-
-
-        // --- Инициализация при загрузке страницы ---
-        document.addEventListener('DOMContentLoaded', () => {
-            applyTheme(getCurrentTheme()); 
-            renderDialoguesList(); 
+        // Отображение текущего счета
+        scoreDisplay.textContent = score.toLocaleString();
+        
+        // Обработчик кнопки Таблицы
+        leaderboardButton.addEventListener('click', () => {
+            generateLeaderboard();
+            openModal('leaderboard-modal');
+        });
+        
+        // Обработчик кнопки Достижений
+        achievementsButton.addEventListener('click', () => {
+            updateAchievementsDisplay(); // Обновляем список перед открытием
+            openModal('achievements-modal');
         });
 
+
+        // Обработчик тапа
+        tapTarget.addEventListener('click', () => {
+            const oldScore = score; // Сохраняем счет ДО тапа
+
+            // 1. Увеличиваем и сохраняем счет
+            score++;
+            scoreDisplay.textContent = score.toLocaleString();
+            localStorage.setItem(STORAGE_KEY_SCORE, score); // Сохраняем счет
+            
+            // 2. Проверяем новые достижения
+            checkNewAchievements(oldScore, score); 
+            
+            // 3. Смена изображения и анимация
+            tapTarget.src = IMAGE_TAPPED; 
+            tapTarget.classList.add('tapped');
+            
+            setTimeout(() => {
+                tapTarget.classList.remove('tapped');
+            }, 100); 
+
+            setTimeout(() => {
+                tapTarget.src = IMAGE_IDLE; 
+            }, 200); 
+
+            showFloatingPlusOne();
+        });
+
+        // --- ЗАПУСК: Всплывающее оповещение при первом входе ---
+        window.onload = () => {
+            // openModal('welcome-modal'); // Закомментировано для удобства тестирования, можно включить обратно
+        };
+        
     </script>
+
 </body>
 </html>
