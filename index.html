@@ -15,10 +15,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 100vh;
+            /* Убрал min-height: 100vh, чтобы избежать проблем с мобильной клавиатурой */
             margin: 0;
-            padding: 20px;
+            padding: 20px 10px; /* Уменьшаем горизонтальный паддинг для узких экранов */
             user-select: none;
             box-sizing: border-box;
             position: relative;
@@ -34,13 +33,14 @@
             border-radius: 20px;
             background-color: rgba(0, 0, 0, 0.3);
             position: relative;
+            box-sizing: border-box;
         }
 
         /* КОНТЕЙНЕР ДЛЯ КНОПОК СПРАВА */
         .header-right {
             position: absolute;
             top: 10px;
-            right: 15px;
+            right: 10px;
             display: flex;
             flex-direction: column;
             align-items: flex-end;
@@ -55,7 +55,7 @@
             color: #ccc;
             border: none;
             border-radius: 10px;
-            font-size: 0.9em;
+            font-size: 0.8em; /* Немного уменьшен для мобильных */
             cursor: pointer;
             transition: background-color 0.2s;
             white-space: nowrap;
@@ -71,20 +71,21 @@
             background-color: rgba(255, 255, 255, 0.1);
             color: #ccc;
             border-radius: 10px;
-            font-size: 0.9em;
+            font-size: 0.8em; /* Немного уменьшен для мобильных */
         }
 
         /* КНОПКА ЛИДЕРОВ (Слева) */
         #leaderboard-button {
             position: absolute;
             top: 10px;
-            left: 15px;
-            padding: 8px 12px;
+            left: 10px;
+            padding: 8px 10px;
             background-color: #00FFFF;
             color: #000;
             border: none;
             border-radius: 10px;
             font-weight: bold;
+            font-size: 0.8em; /* Немного уменьшен для мобильных */
             cursor: pointer;
             transition: background-color 0.2s;
             z-index: 5;
@@ -96,18 +97,19 @@
 
         /* СТИЛЬ СЧЕТА */
         #score-display {
-            font-size: 3.5em;
-            margin-bottom: 40px;
+            font-size: 3em; /* Слегка уменьшен */
+            margin-bottom: 30px;
             font-weight: 900;
             text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
         }
 
-        /* ТАПАЕМЫЙ КРУГ */
+        /* ТАПАЕМЫЙ КРУГ - АДАПТИВНОСТЬ! */
         #tap-target {
-            /* УВЕЛИЧЕННЫЙ РАЗМЕР */
-            width: 450px; 
-            height: 450px; 
-            /* ------------------- */
+            width: 85vw; /* 85% от ширины экрана */
+            height: 85vw; /* Создает идеальный круг */
+            max-width: 450px; /* Ограничение размера для больших экранов */
+            max-height: 450px; /* Ограничение размера для больших экранов */
+            
             cursor: pointer;
             border-radius: 50%;
             background-image: url('flag.png'); 
@@ -129,6 +131,16 @@
             border-color: #FFD700;
         }
 
+        /* МЕДИАЗАПРОС ДЛЯ БОЛЕЕ ШИРОКИХ ЭКРАНОВ (ПК) */
+        @media (min-width: 600px) {
+            #score-display {
+                font-size: 3.5em;
+            }
+            .header-btn, #user-id-display, #leaderboard-button {
+                font-size: 0.9em;
+            }
+        }
+        
         /* МОДАЛЬНОЕ ОКНО (Общее) */
         .modal-overlay {
             position: fixed;
@@ -146,14 +158,14 @@
 
         .modal-content {
             background-color: #2c2c2c;
-            padding: 30px;
+            padding: 20px; /* Уменьшаем паддинг для мобильных */
             border-radius: 15px;
-            width: 90%;
+            width: 95%; /* Используем больше ширины на мобильных */
             max-width: 400px;
             box-shadow: 0 5px 25px rgba(0, 255, 255, 0.5);
             color: #ffffff;
             animation: fadeIn 0.3s ease-out;
-            max-height: 80vh;
+            max-height: 90vh; /* Увеличиваем высоту для мобильных */
             overflow-y: auto;
             position: relative; 
         }
@@ -177,22 +189,21 @@
 
         /* Стили для модальных окон достижений */
         #achievement-detail-modal h4 {
-            font-size: 1.8em;
+            font-size: 1.6em; /* Слегка уменьшен */
             color: #FFD700;
             margin-top: 0;
-            text-align: center; /* Центрируем заголовок */
+            text-align: center; 
         }
         
-        /* НОВЫЙ СТИЛЬ ДЛЯ ИКОНКИ ДОСТИЖЕНИЯ В МОДАЛЕ */
+        /* СТИЛЬ ДЛЯ ИКОНКИ ДОСТИЖЕНИЯ В МОДАЛЕ */
         .achievement-detail-icon {
-            width: 80px;
-            height: 80px;
+            width: 70px; /* Слегка уменьшен */
+            height: 70px; 
             border-radius: 10px;
             object-fit: cover;
             margin-bottom: 15px;
         }
-        /* /НОВЫЙ СТИЛЬ */
-
+        
         /* Стили для основного окна "Мои Достижения" */
         .achievement-item {
             display: flex;
@@ -203,6 +214,7 @@
             opacity: 0.6;
             cursor: pointer; 
             transition: background-color 0.1s;
+            font-size: 0.9em; /* Слегка уменьшен */
         }
         
         .achievement-item:hover {
@@ -221,9 +233,10 @@
         }
 
         .leaderboard-table th, .leaderboard-table td {
-            padding: 10px;
+            padding: 8px; /* Слегка уменьшен */
             text-align: left;
             border-bottom: 1px solid #444;
+            font-size: 0.9em; /* Слегка уменьшен */
         }
 
         .leaderboard-table th {
@@ -247,7 +260,7 @@
 
         @keyframes flyup {
             0% { opacity: 1; transform: translate(-50%, 0); }
-            100% { opacity: 0; transform: translate(-50%, -120px); } 
+            100% { opacity: 0; transform: translate(-50%, -80px); } /* Уменьшили высоту полета */
             }
     </style>
 </head>
@@ -398,7 +411,7 @@
                 <div style="text-align: center;">
                     <img src="${iconPath}" alt="${achievement.name}" class="achievement-detail-icon" style="border: 3px solid ${isAchieved ? '#32CD32' : '#FF4500'};">
                 </div>
-                <p style="font-size: 1.1em; color: #ccc; text-align: center; margin-bottom: 15px;">${achievement.description}</p>
+                <p style="font-size: 1.1em; color: #ccc; text-align: center; margin-bottom: 15px; padding: 0 10px;">${achievement.description}</p>
             `;
             
             // 3. Добавляем статус
@@ -423,7 +436,7 @@
         function showAchievementNotification(achievement) {
             detailTitle.textContent = `🌟 Достижение получено: ${achievement.name}`;
             // Устанавливаем простой текст, чтобы не сломать разметку, если до этого был клик на детали
-            detailDescription.innerHTML = `<p style="font-size: 1.1em; color: #ccc;">${achievement.description}</p>`; 
+            detailDescription.innerHTML = `<p style="font-size: 1.1em; color: #ccc; text-align: center;">${achievement.description}</p>`; 
             
             // Уникальный стиль для уведомления
             detailModal.querySelector('.modal-content').style.boxShadow = '0 5px 40px gold';
