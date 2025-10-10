@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тапалка Помощников</title>
+    
+    <style>
+        /* ОСНОВНОЙ СТИЛЬ */
+        body {
+            /* Используем градиент как фоллбэк, так как фон может быть задан через body { background: url('...'); } */
+            background: linear-gradient(135deg, #1f1c2c 0%, #000000 100%); 
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px 10px; 
+            user-select: none;
+            box-sizing: border-box;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.05);
+            min-height: 100vh;
+        }
+
+        /* --- СТИЛИ ШАПКИ --- */
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .header-item {
+            text-align: center;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 10px;
+            transition: background-color 0.2s;
+            font-size: 13px;
+            color: #ccc;
+            white-space: nowrap;
+        }
+
+        .header-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        #user-id-display {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        /* --- СТИЛИ СЧЕТА --- */
+        .score-display {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        #score-value {
+            font-size: 72px;
+            font-weight: 700;
+            color: #00FFFF;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        /* --- СТИЛИ КНОПКИ ТАПА (ЦЕНТР) --- */
+        .tap-area {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 50px;
+            height: 300px;
+        }
+
+        #tap-target {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.1s;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5), 0 0 50px rgba(0, 255, 255, 0.2);
+            position: relative;
+            z-index: 10;
+            
+            /* ИСПРАВЛЕНО: Фон круга - flag.png */
+            background: url('flag.png') no-repeat center center;
+            background-size: cover; 
+            overflow: hidden; /* Скрываем часть изображения flag.png, выходящую за круг */
+            
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0; /* Скрываем старый текст */
+        }
+        
+        /* ИСПРАВЛЕНО: Элемент для отображения gaz1/gaz2 */
+        #tap-image {
+            width: 100%;
+            height: 100%;
+            /* ИСПРАВЛЕНО: Изначально показываем gaz2.png (не нажато) */
+            background: url('gaz2.png') no-repeat center center;
+            background-size: 70%; /* Размер логотипа внутри круга */
+            transition: background 0.1s;
+        }
+
+        #tap-target.tapped {
+            transform: scale(0.95);
+            opacity: 0.9;
+        }
+        
+        /* Стили для неактивного состояния */
+        .tap-area.inactive {
+            pointer-events: none;
+        }
+        
+        .tap-area.inactive #tap-target {
+            opacity: 0.5;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+        }
+        
+        .tap-area.inactive::after {
+            content: "Ошибка: Введите ID вручную";
+            position: absolute;
+            bottom: -30px;
+            color: #FF6347; 
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* --- АНИМАЦИЯ +1 --- */
+        .floating-plus-one {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #FFD700;
+            font-size: 30px;
+            font-weight: bold;
+            opacity: 1;
+            animation: floatUp 0.8s ease-out;
+            pointer-events: none; 
+            z-index: 20;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -150%);
+                opacity: 0;
+            }
+        }
+
+        /* --- МОДАЛЬНЫЕ ОКНА --- */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.8); 
+        }
+
+        .modal-content {
+            background-color: #1a1a2e;
+            margin: 10% auto; 
+            padding: 20px;
+            border: 1px solid #00FFFF;
+            width: 90%; 
+            max-width: 400px;
+            border-radius: 15px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .modal-content h2 {
+            color: #00FFFF;
+            border-bottom: 2px solid #00FFFF;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* --- СТИЛИ ТАБЛИЦЫ ЛИДЕРОВ --- */
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leaderboard-table th, .leaderboard-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+
+        .leaderboard-table th {
+            background-color: #00FFFF20;
+            color: #00FFFF;
+        }
+        
+        /* Выделение текущего пользователя в таблице */
+        .leaderboard-table tr.current-user {
+            font-weight: bold;
+            color: #FFD700;
+            background-color: #00FFFF30;
+        }
+        
+        /* ИСПРАВЛЕНО: Стили для отображения логотипов достижений */
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 5px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .achievement-logo {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            background-size: cover;
+            border-radius: 50%;
+            border: 2px solid #00FFFF50;
+        }
+
+        /* --- СТИЛИ ДЛЯ РУЧНОГО ВВОДА ID --- */
+        .manual-input {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .manual-input input {
+            padding: 10px;
+            border: 2px solid #00FFFF;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 16px;
+            width: 200px;
+            text-align: center;
+        }
+
+        .manual-input button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            background: #00FFFF;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .manual-input button:hover {
+            background: #00CCCC;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <div class="header">
+        <div class="header-item" id="leaderboard-button">
+            🏆 Таблица лидеров
+        </div>
+        <div class="header-item" id="achievements-button">
+            ⭐ Достижения
+        </div>
+    </div>
+    
+    <div class="score-display">
+        <div id="user-id-display">ID: (Введите ID вручную)</div>
+        <span id="score-value">0</span>
+        <div style="font-size: 18px; color: #ccc;">тапов</div>
+    </div>
+
+    <div class="manual-input">
+        <input type="text" id="manual-tap-id" placeholder="Введите ваш 7-значный ID" maxlength="7">
+        <button onclick="loadUserData()">Загрузить</button>
+    </div>
+
+    <div class="tap-area inactive">
+        <div id="tap-target">
+            <div id="tap-image"></div>
+        </div>
+    </div>
+
+</div>
+
+<div id="leaderboard-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal('leaderboard-modal')">&times;</span>
+        <h2>🏆 Таблица лидеров</h2>
+        <table class="leaderboard-table">
+            <tbody id="leaderboard-data">
+                <tr>
+                    <th>№</th>
+                    <th>Игрок</th>
+                    <th>Тапов</th>
+                </tr>
+                <tr><td colspan="3">Загрузка...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="achievements-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal('achievements-modal')">&times;</span>
+        <h2>⭐ Мои Достижения</h2>
+        <ul id="achievements-list">
+            <li>Достижения будут отображаться здесь</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // --- КОНФИГУРАЦИЯ СЕРВЕРА ---
+    const API_BASE_URL = 'http://217.26.29.29:5000/api';  // Ваш сервер
+    const API_SECRET = 'fuckgaz'; 
+    
+    // --- DOM ЭЛЕМЕНТЫ ---
+    const tapTarget = document.getElementById('tap-target');
+    const tapImage = document.getElementById('tap-image'); // ИСПРАВЛЕНО: Получаем новый элемент
+    const tapArea = document.querySelector('.tap-area');
+    const scoreDisplay = document.getElementById('score-value');
+    const userIdDisplay = document.getElementById('user-id-display');
+    const leaderboardButton = document.getElementById('leaderboard-button');
+    const achievementsButton = document.getElementById('achievements-button');
+    const leaderboardDataElement = document.getElementById('leaderboard-data');
+    const achievementsListElement = document.getElementById('achievements-list');
+    const manualTapIdInput = document.getElementById('manual-tap-id');
+    
+    // --- ПЕРЕМЕННЫЕ СОСТОЯНИЯ ---
+    let score = 0;
+    let tapId = null; 
+    let userName = 'Помощник';
+    let isSaving = false;
+
+    // --- СПИСОК ДОСТИЖЕНИЙ (ИСПРАВЛЕНО: Расширен до 20 для логотипов 1.png - 20.png) ---
+    const ALL_ACHIEVEMENTS = [
+        { id: 'a1', name: 'Первый Шаг', goal: 1, message: 'Сделан первый тап!', logo: '1.png' },
+        { id: 'a2', name: 'Начало Пути', goal: 10, message: 'Сделай 10 тапов', logo: '2.png' },
+        { id: 'a3', name: 'Новичок', goal: 50, message: '50 тапов - отличное начало!', logo: '3.png' },
+        { id: 'a4', name: 'Первая Сотня', goal: 100, message: 'Получи 100 тапов!', logo: '4.png' },
+        { id: 'a5', name: 'Боец', goal: 250, message: '250 тапов!', logo: '5.png' },
+        { id: 'a6', name: 'Ускорение', goal: 500, message: 'Полтысячи тапов!', logo: '6.png' },
+        { id: 'a7', name: 'Помощник', goal: 1000, message: 'Получи 1000 тапов!', logo: '7.png' },
+        { id: 'a8', name: '2000 Тапов', goal: 2000, message: 'Ты на высоте!', logo: '8.png' },
+        { id: 'a9', name: 'Мастер', goal: 4000, message: '4000 тапов!', logo: '9.png' },
+        { id: 'a10', name: 'Топ-10', goal: 7000, message: '7000 тапов!', logo: '10.png' },
+        { id: 'a11', name: 'Мастер Тапа', goal: 10000, message: 'Добейся 10 000 тапов!', logo: '11.png' },
+        { id: 'a12', name: 'Крейсер', goal: 15000, message: '15К — впечатляет!', logo: '12.png' },
+        { id: 'a13', name: '30000 Тапов', goal: 30000, message: 'Невероятный результат!', logo: '13.png' },
+        { id: 'a14', name: '50000 Тапов', goal: 50000, message: 'Половина сотни тысяч!', logo: '14.png' },
+        { id: 'a15', name: 'Чемпион', goal: 75000, message: '75К — ты лучший!', logo: '15.png' },
+        { id: 'a16', name: 'На Пределе', goal: 100000, message: '100 тысяч тапов! 💪', logo: '16.png' },
+        { id: 'a17', name: '200000 Тапов', goal: 200000, message: 'Двойная сотня!', logo: '17.png' },
+        { id: 'a18', name: 'Полумиллионник', goal: 500000, message: '500 000 тапов! Фантастика!', logo: '18.png' },
+        { id: 'a19', name: 'Миллион Тапов', goal: 1000000, message: 'Миллион! Абсолютный Мастер!', logo: '19.png' },
+        { id: 'a20', name: 'Запредельный', goal: 5000000, message: '5 миллионов тапов! Легенда!', logo: '20.png' },
+    ];
+
+
+    // --- ФУНКЦИИ МОДАЛЬНЫХ ОКОН ---
+    function openModal(id) {
+        document.getElementById(id).style.display = 'block';
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    }
+
+    // --- ФУНКЦИИ СВЯЗИ С СЕРВЕРОМ ---
+    
+    async function fetchScoreFromServer(id) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/get_score`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tap_id: id }),
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                return { score: data.score, name: data.name, found: true };
+            } else {
+                console.error(`Ошибка сервера: ${response.status}`);
+                return { score: 0, name: null, found: false }; 
+            }
+        } catch (error) {
+            console.error('Ошибка при получении счета:', error);
+            return { score: 0, name: null, found: false }; 
+        }
+    }
+
+    async function sendScoreToServer() {
+        if (!tapId || isSaving) return; 
+
+        isSaving = true;
+        try {
+            const response = await fetch(`${API_BASE_URL}/update_score`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tap_id: tapId,
+                    score: score,
+                    secret_key: API_SECRET
+                }),
+            });
+            
+            if (!response.ok) {
+                console.error(`Ошибка сервера: ${response.status}`);
+            }
+
+        } catch (error) {
+            console.error('Ошибка при отправке счета:', error);
+        } finally {
+            isSaving = false;
+        }
+    }
+
+    async function fetchLeaderboard() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/leaderboard`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch leaderboard');
+            }
+            const data = await response.json();
+            return data.leaderboard;
+        } catch (error) {
+            console.error('Ошибка при получении таблицы лидеров:', error);
+            return [];
+        }
+    }
+
+    // --- УПРАВЛЕНИЕ ДАННЫМИ ---
+    
+    function updateDisplay(newScore, id, name) {
+        score = newScore;
+        tapId = id;
+        userName = name;
+        
+        scoreDisplay.textContent = score.toLocaleString();
+        userIdDisplay.textContent = `ID: ${tapId} (${userName})`;
+        tapArea.classList.remove('inactive');
+        
+        // Сохраняем ID в localStorage
+        localStorage.setItem('last_tap_id', tapId);
+    }
+    
+    function checkNewAchievements(oldScore, newScore) {
+        ALL_ACHIEVEMENTS.forEach(a => {
+            if (newScore >= a.goal && oldScore < a.goal) {
+                alert(`🎉 НОВОЕ ДОСТИЖЕНИЕ: ${a.name}! ${a.message}`);
+            }
+        });
+    }
+    
+    function updateAchievementsDisplay() {
+        achievementsListElement.innerHTML = '';
+        ALL_ACHIEVEMENTS.forEach(a => {
+            const isAchieved = score >= a.goal; 
+            
+            // ИСПРАВЛЕНО: Генерация HTML с использованием логотипов
+            const li = document.createElement('li');
+            li.classList.add('achievement-item');
+            
+            const logoDiv = document.createElement('div');
+            logoDiv.classList.add('achievement-logo');
+            logoDiv.style.backgroundImage = `url('${a.logo}')`;
+            logoDiv.style.opacity = isAchieved ? '1' : '0.4';
+
+            const textDiv = document.createElement('div');
+            textDiv.style.flexGrow = '1';
+            textDiv.innerHTML = `
+                <strong>${a.name}</strong> (${a.goal.toLocaleString()} тапов)
+                <div style="font-size: 12px; color: ${isAchieved ? '#ccc' : '#888'};">${a.message}</div>
+                <span style="float: right; color: ${isAchieved ? '#00FFFF' : '#888'}; font-weight: bold;">
+                    ${isAchieved ? '✅ Получено' : '❌ Не получено'}
+                </span>
+            `;
+
+            li.appendChild(logoDiv);
+            li.appendChild(textDiv);
+            achievementsListElement.appendChild(li);
+        });
+    }
+
+
+    // --- ФУНКЦИИ ЛИДЕРБОРДА ---
+    async function generateLeaderboard() {
+        leaderboardDataElement.innerHTML = `
+            <tr>
+                <th>№</th>
+                <th>Игрок</th>
+                <th>Тапов</th>
+            </tr>
+            <tr><td colspan="3">Загрузка...</td></tr>
+        `;
+        
+        const currentTapID = tapId;
+        const leaders = await fetchLeaderboard();
+
+        if (leaders.length === 0) {
+            leaderboardDataElement.innerHTML = '<tr><td colspan="3">Не удалось загрузить данные</td></tr>';
+            return;
+        }
+        
+        leaderboardDataElement.innerHTML = `
+            <tr>
+                <th>№</th>
+                <th>Игрок</th>
+                <th>Тапов</th>
+            </tr>
+        `; 
+
+        leaders.forEach((leader, i) => {
+            const row = leaderboardDataElement.insertRow();
+            if (leader.tap_id === currentTapID) {
+                row.classList.add('current-user');
+            }
+            
+            row.insertCell().textContent = i + 1;
+            row.insertCell().textContent = leader.name;
+            row.insertCell().textContent = leader.score.toLocaleString();
+        });
+    }
+
+    // --- АНИМАЦИЯ +1 ---
+    function showFloatingPlusOne() {
+        const plusOne = document.createElement('div');
+        plusOne.textContent = '+1';
+        plusOne.classList.add('floating-plus-one');
+        tapTarget.parentNode.appendChild(plusOne); 
+
+        setTimeout(() => {
+            plusOne.remove();
+        }, 800);
+    }
+
+    // --- РУЧНАЯ ЗАГРУЗКА ПО ID ---
+    async function loadUserData() {
+        const inputId = manualTapIdInput.value.trim();
+        
+        if (!inputId || !/^\d{7}$/.test(inputId)) {
+            alert('❌ Пожалуйста, введите корректный 7-значный ID');
+            return;
+        }
+        
+        userIdDisplay.textContent = `ID: ${inputId} (Загрузка...)`;
+        
+        const result = await fetchScoreFromServer(inputId);
+        
+        if (result.found) {
+            updateDisplay(result.score, inputId, result.name);
+            manualTapIdInput.value = ''; // Очищаем поле ввода
+        } else {
+            userIdDisplay.textContent = `ID: ${inputId} (Не найден)`;
+            tapArea.classList.add('inactive');
+            alert('❌ Пользователь с таким ID не найден');
+        }
+    }
+    
+    // --- АВТОМАТИЧЕСКАЯ ИНИЦИАЛИЗАЦИЯ ---
+    async function initWebApp() {
+        // 1. Пробуем получить ID из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlTapID = urlParams.get('tap_id');
+        
+        // 2. Пробуем получить ID из localStorage
+        const savedTapID = localStorage.getItem('last_tap_id');
+        
+        // Приоритет: URL > localStorage
+        const autoTapID = urlTapID || savedTapID;
+        
+        if (autoTapID && /^\d{7}$/.test(autoTapID)) {
+            userIdDisplay.textContent = `ID: ${autoTapID} (Загрузка...)`;
+            const result = await fetchScoreFromServer(autoTapID);
+            
+            if (result.found) {
+                updateDisplay(result.score, autoTapID, result.name);
+                return;
+            }
+        }
+        
+        // Если автоматическая загрузка не удалась
+        userIdDisplay.textContent = 'ID: Введите ID вручную';
+        tapArea.classList.add('inactive');
+    }
+    
+    // --- ИНИЦИАЛИЗАЦИЯ И ОБРАБОТЧИКИ ---
+
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        initWebApp(); // Запускаем автоматическую загрузку
+        
+        // --- ОБРАБОТЧИКИ КНОПОК ---
+        leaderboardButton.addEventListener('click', () => {
+            if (!tapId) {
+                alert('❌ Сначала загрузите ваш ID');
+                return;
+            }
+            generateLeaderboard();
+            openModal('leaderboard-modal');
+        });
+        
+        achievementsButton.addEventListener('click', () => {
+            if (!tapId) {
+                alert('❌ Сначала загрузите ваш ID');
+                return;
+            }
+            updateAchievementsDisplay(); 
+            openModal('achievements-modal');
+        });
+
+        // --- ОБРАБОТЧИК ТАПА ---
+        tapTarget.addEventListener('pointerdown', () => {
+            if (!tapId) {
+                // Если ID не загружен, не реагируем на нажатие, но показываем ошибку
+                alert('❌ Сначала загрузите ваш ID');
+                return;
+            }
+            // ИСПРАВЛЕНО: Переключаем на gaz1.png при нажатии
+            tapImage.style.backgroundImage = "url('gaz1.png')";
+            
+            const oldScore = score; 
+            score++;
+            scoreDisplay.textContent = score.toLocaleString();
+            
+            sendScoreToServer(); 
+            checkNewAchievements(oldScore, score); 
+            
+            tapTarget.classList.add('tapped');
+            showFloatingPlusOne();
+        });
+
+        // ИСПРАВЛЕНО: Обработчик отпускания кнопки или ухода курсора/пальца
+        tapTarget.addEventListener('pointerup', resetTapImage);
+        tapTarget.addEventListener('pointerleave', resetTapImage);
+        
+        function resetTapImage() {
+            // ИСПРАВЛЕНО: Переключаем на gaz2.png при отпускании
+            tapImage.style.backgroundImage = "url('gaz2.png')";
+            tapTarget.classList.remove('tapped');
+        }
+
+        // Обработка Enter в поле ввода ID
+        manualTapIdInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loadUserData();
+            }
+        });
+
+        // Синхронизация счета с сервером каждые 30 секунд
+        setInterval(sendScoreToServer, 30000); 
+    });
+</script>
+
+</body>
+</html>
