@@ -98,15 +98,25 @@
             box-shadow: 0 0 30px rgba(0, 255, 255, 0.5), 0 0 50px rgba(0, 255, 255, 0.2);
             position: relative;
             z-index: 10;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 24px;
             font-weight: bold;
             color: white;
+            padding: 0;
         }
         
+        /* Стиль для изображения внутри кнопки */
+        #tap-target img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
         #tap-target.tapped {
             transform: scale(0.95);
             opacity: 0.9;
@@ -258,6 +268,36 @@
         .manual-input button:hover {
             background: #00CCCC;
         }
+
+        /* --- СТИЛИ ДОСТИЖЕНИЙ --- */
+        #achievements-list li {
+            list-style: none;
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .achievement-logo {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            border-radius: 5px;
+            object-fit: cover;
+            flex-shrink: 0; /* Не сжимать логотип */
+        }
+        
+        .achievement-info {
+            flex-grow: 1;
+        }
+
+        .achievement-status {
+            font-size: 14px;
+            margin-left: 10px;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -279,7 +319,6 @@
         <div style="font-size: 18px; color: #ccc;">тапов</div>
     </div>
 
-    <!-- Ручной ввод ID -->
     <div class="manual-input">
         <input type="text" id="manual-tap-id" placeholder="Введите ваш 7-значный ID" maxlength="7">
         <button onclick="loadUserData()">Загрузить</button>
@@ -287,7 +326,7 @@
 
     <div class="tap-area inactive">
         <div id="tap-target">
-            🎮 ТАПАЙ!
+            <img src="gaz1.png" alt="Тапалка Помощников" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; pointer-events: none;">
         </div>
     </div>
 
@@ -304,7 +343,7 @@
                     <th>Игрок</th>
                     <th>Тапов</th>
                 </tr>
-                <tr><td colspan="3">Загрузка...</td></tr>
+                <tr><td colspan="3">Загрузка...</td></td></tr>
             </tbody>
         </table>
     </div>
@@ -315,14 +354,13 @@
         <span class="close-button" onclick="closeModal('achievements-modal')">&times;</span>
         <h2>⭐ Мои Достижения</h2>
         <ul id="achievements-list">
-            <li>Достижения будут отображаться здесь</li>
-        </ul>
+            </ul>
     </div>
 </div>
 
 <script>
     // --- КОНФИГУРАЦИЯ СЕРВЕРА ---
-    const API_BASE_URL = 'http://193.42.125.141:5000/api';  // Ваш сервер
+    const API_BASE_URL = 'http://217.26.29.29:5000/api';  // Ваш сервер (НЕ ЗАБУДЬТЕ ЗАМЕНИТЬ)
     const API_SECRET = 'fuckgaz'; 
     
     // --- DOM ЭЛЕМЕНТЫ ---
@@ -342,12 +380,14 @@
     let userName = 'Помощник';
     let isSaving = false;
 
-    // --- СПИСОК ДОСТИЖЕНИЙ ---
+    // --- СПИСОК ДОСТИЖЕНИЙ (ОБНОВЛЕНО) ---
     const ALL_ACHIEVEMENTS = [
-        { id: 'start', name: 'Первый Шаг', goal: 1, message: 'Сделан первый тап!' },
-        { id: 'novice', name: 'Новичок', goal: 100, message: '100 тапов - отличное начало!' },
-        { id: 'helper', name: 'Помощник', goal: 1000, message: 'Получи 1000 тапов!' },
-        { id: 'master', name: 'Мастер Тапа', goal: 10000, message: 'Добейся 10 000 тапов!' },
+        // ПРИМЕЧАНИЕ: Пути '1.png', '2.png' и т.д. должны указывать на файлы в той же папке, что и index.html
+        { id: 'start', name: 'Первый Шаг', goal: 1, logo: '1.png', message: 'Сделан первый тап!' },
+        { id: 'novice', name: 'Новичок', goal: 100, logo: '2.png', message: '100 тапов - отличное начало!' },
+        { id: 'helper', name: 'Помощник', goal: 1000, logo: '3.png', message: 'Получи 1000 тапов!' },
+        { id: 'master', name: 'Мастер Тапа', goal: 10000, logo: '4.png', message: 'Добейся 10 000 тапов!' },
+        // Добавьте свои достижения с соответствующими логотипами
     ];
 
     // --- ФУНКЦИИ МОДАЛЬНЫХ ОКОН ---
@@ -451,21 +491,26 @@
         });
     }
     
+    // --- ОБНОВЛЕННАЯ ФУНКЦИЯ ОТОБРАЖЕНИЯ ДОСТИЖЕНИЙ ---
     function updateAchievementsDisplay() {
         achievementsListElement.innerHTML = '';
         ALL_ACHIEVEMENTS.forEach(a => {
             const li = document.createElement('li');
             const isAchieved = score >= a.goal; 
-            
+            const statusColor = isAchieved ? '#00FFFF' : '#888';
+            const statusText = isAchieved ? '✅ Получено' : `❌ (Цель: ${a.goal.toLocaleString()})`;
+
             li.innerHTML = `
-                <strong>${a.name}</strong> (${a.goal.toLocaleString()} тапов)
-                <span style="float: right; color: ${isAchieved ? '#00FFFF' : '#888'};">
-                    ${isAchieved ? '✅ Получено' : '❌ Не получено'}
+                <img src="${a.logo}" alt="${a.name}" class="achievement-logo" title="${a.name}">
+                <div class="achievement-info">
+                    <strong>${a.name}</strong>
+                    <div style="font-size: 12px; color: #aaa;">${a.message}</div>
+                </div>
+                <span class="achievement-status" style="color: ${statusColor};">
+                    ${statusText}
                 </span>
             `;
             li.style.color = isAchieved ? '#fff' : '#aaa';
-            li.style.listStyle = 'none';
-            li.style.padding = '5px 0';
             achievementsListElement.appendChild(li);
         });
     }
@@ -631,4 +676,9 @@
 </script>
 
 </body>
+</html>
+</script>
+
+</body>
+
 </html>
