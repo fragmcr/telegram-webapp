@@ -100,24 +100,24 @@
             position: relative;
             z-index: 10;
             
-            /* ИСПРАВЛЕНО: Фон круга - flag.png */
+            /* Фон круга - flag.png */
             background: url('flag.png') no-repeat center center;
             background-size: cover; 
-            overflow: hidden; /* Скрываем часть изображения flag.png, выходящую за круг */
+            overflow: hidden; 
             
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0; /* Скрываем старый текст */
+            font-size: 0; 
         }
         
-        /* ИСПРАВЛЕНО: Элемент для отображения gaz1/gaz2 */
+        /* Элемент для отображения gaz1/gaz2 */
         #tap-image {
             width: 100%;
             height: 100%;
-            /* ИСПРАВЛЕНО: Изначально показываем gaz2.png (не нажато) */
+            /* Изначально показываем gaz2.png (не нажато) */
             background: url('gaz2.png') no-repeat center center;
-            background-size: 70%; /* Размер логотипа внутри круга */
+            background-size: 70%; 
             transition: background 0.1s;
         }
 
@@ -126,21 +126,20 @@
             opacity: 0.9;
         }
         
-        /* Стили для неактивного состояния */
+        /* УДАЛЕНО: Стили для неактивного состояния, так как теперь ID всегда есть */
         .tap-area.inactive {
-            pointer-events: none;
+            /* Теперь это состояние не должно срабатывать */
         }
         
         .tap-area.inactive #tap-target {
-            opacity: 0.5;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+           /* Теперь это состояние не должно срабатывать */
         }
         
         .tap-area.inactive::after {
-            content: "Ошибка: Введите ID вручную";
+            content: "Идет загрузка...";
             position: absolute;
             bottom: -30px;
-            color: #FF6347; 
+            color: #FFD700; 
             font-size: 16px;
             font-weight: bold;
         }
@@ -241,7 +240,7 @@
             background-color: #00FFFF30;
         }
         
-        /* ИСПРАВЛЕНО: Стили для отображения логотипов достижений */
+        /* Стили для отображения логотипов достижений */
         .achievement-item {
             display: flex;
             align-items: center;
@@ -258,38 +257,9 @@
             border-radius: 50%;
             border: 2px solid #00FFFF50;
         }
+        
+        /* --- УДАЛЕНО: СТИЛИ ДЛЯ РУЧНОГО ВВОДА ID --- */
 
-        /* --- СТИЛИ ДЛЯ РУЧНОГО ВВОДА ID --- */
-        .manual-input {
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .manual-input input {
-            padding: 10px;
-            border: 2px solid #00FFFF;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            font-size: 16px;
-            width: 200px;
-            text-align: center;
-        }
-
-        .manual-input button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 10px;
-            background: #00FFFF;
-            color: #000;
-            font-weight: bold;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-
-        .manual-input button:hover {
-            background: #00CCCC;
-        }
     </style>
 </head>
 <body>
@@ -306,14 +276,9 @@
     </div>
     
     <div class="score-display">
-        <div id="user-id-display">ID: (Введите ID вручную)</div>
+        <div id="user-id-display">ID: (Загрузка...)</div>
         <span id="score-value">0</span>
         <div style="font-size: 18px; color: #ccc;">тапов</div>
-    </div>
-
-    <div class="manual-input">
-        <input type="text" id="manual-tap-id" placeholder="Введите ваш 7-значный ID" maxlength="7">
-        <button onclick="loadUserData()">Загрузить</button>
     </div>
 
     <div class="tap-area inactive">
@@ -358,7 +323,7 @@
     
     // --- DOM ЭЛЕМЕНТЫ ---
     const tapTarget = document.getElementById('tap-target');
-    const tapImage = document.getElementById('tap-image'); // ИСПРАВЛЕНО: Получаем новый элемент
+    const tapImage = document.getElementById('tap-image'); 
     const tapArea = document.querySelector('.tap-area');
     const scoreDisplay = document.getElementById('score-value');
     const userIdDisplay = document.getElementById('user-id-display');
@@ -366,7 +331,6 @@
     const achievementsButton = document.getElementById('achievements-button');
     const leaderboardDataElement = document.getElementById('leaderboard-data');
     const achievementsListElement = document.getElementById('achievements-list');
-    const manualTapIdInput = document.getElementById('manual-tap-id');
     
     // --- ПЕРЕМЕННЫЕ СОСТОЯНИЯ ---
     let score = 0;
@@ -374,7 +338,7 @@
     let userName = 'Помощник';
     let isSaving = false;
 
-    // --- СПИСОК ДОСТИЖЕНИЙ (ИСПРАВЛЕНО: Расширен до 20 для логотипов 1.png - 20.png) ---
+    // --- СПИСОК ДОСТИЖЕНИЙ ---
     const ALL_ACHIEVEMENTS = [
         { id: 'a1', name: 'Первый Шаг', goal: 1, message: 'Сделан первый тап!', logo: '1.png' },
         { id: 'a2', name: 'Начало Пути', goal: 10, message: 'Сделай 10 тапов', logo: '2.png' },
@@ -428,11 +392,40 @@
                 const data = await response.json();
                 return { score: data.score, name: data.name, found: true };
             } else {
-                console.error(`Ошибка сервера: ${response.status}`);
+                // Если статус 404 или другая ошибка, считаем, что пользователь не найден
                 return { score: 0, name: null, found: false }; 
             }
         } catch (error) {
             console.error('Ошибка при получении счета:', error);
+            return { score: 0, name: null, found: false }; 
+        }
+    }
+    
+    // НОВАЯ ФУНКЦИЯ: Автоматическая регистрация нового пользователя
+    async function registerNewUser(id) {
+        const defaultName = 'New Helper'; // Имя по умолчанию для нового пользователя
+        try {
+            const response = await fetch(`${API_BASE_URL}/update_score`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tap_id: id,
+                    score: 0,
+                    name: defaultName, // Отправляем имя для регистрации
+                    secret_key: API_SECRET
+                }),
+            });
+            
+            if (response.ok) {
+                // Успешная регистрация
+                return { score: 0, name: defaultName, found: true };
+            } else {
+                console.error(`Ошибка регистрации: ${response.status}`);
+                return { score: 0, name: null, found: false }; 
+            }
+
+        } catch (error) {
+            console.error('Ошибка при регистрации:', error);
             return { score: 0, name: null, found: false }; 
         }
     }
@@ -488,7 +481,7 @@
         userIdDisplay.textContent = `ID: ${tapId} (${userName})`;
         tapArea.classList.remove('inactive');
         
-        // Сохраняем ID в localStorage
+        // Сохраняем ID в localStorage, чтобы использовать его в следующий раз
         localStorage.setItem('last_tap_id', tapId);
     }
     
@@ -505,7 +498,6 @@
         ALL_ACHIEVEMENTS.forEach(a => {
             const isAchieved = score >= a.goal; 
             
-            // ИСПРАВЛЕНО: Генерация HTML с использованием логотипов
             const li = document.createElement('li');
             li.classList.add('achievement-item');
             
@@ -581,67 +573,70 @@
             plusOne.remove();
         }, 800);
     }
+    
+    // НОВАЯ ФУНКЦИЯ: Генерация случайного 7-значного ID
+    function generateRandomTapID() {
+        // Генерирует число от 1,000,000 до 9,999,999
+        return Math.floor(1000000 + Math.random() * 9000000).toString();
+    }
 
-    // --- РУЧНАЯ ЗАГРУЗКА ПО ID ---
-    async function loadUserData() {
-        const inputId = manualTapIdInput.value.trim();
+    // --- АВТОМАТИЧЕСКАЯ ИНИЦИАЛИЗАЦИЯ (ИСПРАВЛЕНО) ---
+    async function initWebApp() {
+        tapArea.classList.add('inactive'); // Блокируем тап, пока идет загрузка
         
-        if (!inputId || !/^\d{7}$/.test(inputId)) {
-            alert('❌ Пожалуйста, введите корректный 7-значный ID');
-            return;
+        // 1. Пробуем получить ID из URL или localStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        let currentTapID = urlParams.get('tap_id') || localStorage.getItem('last_tap_id');
+        
+        // 2. Если ID не найден или некорректен, генерируем новый
+        if (!currentTapID || !/^\d{7}$/.test(currentTapID)) {
+             currentTapID = generateRandomTapID();
+             // В этом случае, мы уверены, что пользователя на сервере нет
+             const registerResult = await registerNewUser(currentTapID);
+             
+             if (registerResult.found) {
+                updateDisplay(registerResult.score, currentTapID, registerResult.name);
+                return;
+             }
+             
+             // Если регистрация не удалась, показываем ошибку
+             userIdDisplay.textContent = 'Ошибка: Нет связи с сервером!';
+             tapArea.classList.add('inactive');
+             return;
         }
         
-        userIdDisplay.textContent = `ID: ${inputId} (Загрузка...)`;
-        
-        const result = await fetchScoreFromServer(inputId);
+        // 3. Если ID есть, пробуем загрузить данные
+        userIdDisplay.textContent = `ID: ${currentTapID} (Загрузка...)`;
+        let result = await fetchScoreFromServer(currentTapID);
         
         if (result.found) {
-            updateDisplay(result.score, inputId, result.name);
-            manualTapIdInput.value = ''; // Очищаем поле ввода
+            // Пользователь найден, загружаем его данные
+            updateDisplay(result.score, currentTapID, result.name);
         } else {
-            userIdDisplay.textContent = `ID: ${inputId} (Не найден)`;
-            tapArea.classList.add('inactive');
-            alert('❌ Пользователь с таким ID не найден');
-        }
-    }
-    
-    // --- АВТОМАТИЧЕСКАЯ ИНИЦИАЛИЗАЦИЯ ---
-    async function initWebApp() {
-        // 1. Пробуем получить ID из URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlTapID = urlParams.get('tap_id');
-        
-        // 2. Пробуем получить ID из localStorage
-        const savedTapID = localStorage.getItem('last_tap_id');
-        
-        // Приоритет: URL > localStorage
-        const autoTapID = urlTapID || savedTapID;
-        
-        if (autoTapID && /^\d{7}$/.test(autoTapID)) {
-            userIdDisplay.textContent = `ID: ${autoTapID} (Загрузка...)`;
-            const result = await fetchScoreFromServer(autoTapID);
+            // Пользователь не найден, регистрируем его
+            result = await registerNewUser(currentTapID);
             
             if (result.found) {
-                updateDisplay(result.score, autoTapID, result.name);
-                return;
+                // Успешная регистрация
+                updateDisplay(result.score, currentTapID, result.name);
+            } else {
+                 // Регистрация не удалась
+                 userIdDisplay.textContent = 'Ошибка: Нет связи с сервером!';
+                 tapArea.classList.add('inactive');
             }
         }
-        
-        // Если автоматическая загрузка не удалась
-        userIdDisplay.textContent = 'ID: Введите ID вручную';
-        tapArea.classList.add('inactive');
     }
     
     // --- ИНИЦИАЛИЗАЦИЯ И ОБРАБОТЧИКИ ---
 
     document.addEventListener('DOMContentLoaded', () => {
         
-        initWebApp(); // Запускаем автоматическую загрузку
+        initWebApp(); // Запускаем автоматическую загрузку и/или регистрацию
         
         // --- ОБРАБОТЧИКИ КНОПОК ---
         leaderboardButton.addEventListener('click', () => {
             if (!tapId) {
-                alert('❌ Сначала загрузите ваш ID');
+                alert('❌ Дождитесь загрузки ID');
                 return;
             }
             generateLeaderboard();
@@ -650,7 +645,7 @@
         
         achievementsButton.addEventListener('click', () => {
             if (!tapId) {
-                alert('❌ Сначала загрузите ваш ID');
+                alert('❌ Дождитесь загрузки ID');
                 return;
             }
             updateAchievementsDisplay(); 
@@ -660,11 +655,11 @@
         // --- ОБРАБОТЧИК ТАПА ---
         tapTarget.addEventListener('pointerdown', () => {
             if (!tapId) {
-                // Если ID не загружен, не реагируем на нажатие, но показываем ошибку
-                alert('❌ Сначала загрузите ваш ID');
+                alert('❌ Дождитесь загрузки ID');
                 return;
             }
-            // ИСПРАВЛЕНО: Переключаем на gaz1.png при нажатии
+            
+            // Переключаем на gaz1.png при нажатии
             tapImage.style.backgroundImage = "url('gaz1.png')";
             
             const oldScore = score; 
@@ -678,22 +673,17 @@
             showFloatingPlusOne();
         });
 
-        // ИСПРАВЛЕНО: Обработчик отпускания кнопки или ухода курсора/пальца
+        // Обработчик отпускания кнопки или ухода курсора/пальца
         tapTarget.addEventListener('pointerup', resetTapImage);
         tapTarget.addEventListener('pointerleave', resetTapImage);
         
         function resetTapImage() {
-            // ИСПРАВЛЕНО: Переключаем на gaz2.png при отпускании
+            // Переключаем на gaz2.png при отпускании
             tapImage.style.backgroundImage = "url('gaz2.png')";
             tapTarget.classList.remove('tapped');
         }
 
-        // Обработка Enter в поле ввода ID
-        manualTapIdInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                loadUserData();
-            }
-        });
+        // УДАЛЕНО: Обработка Enter в поле ввода ID
 
         // Синхронизация счета с сервером каждые 30 секунд
         setInterval(sendScoreToServer, 30000); 
